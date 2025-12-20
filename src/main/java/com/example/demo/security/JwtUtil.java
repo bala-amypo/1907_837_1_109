@@ -1,58 +1,48 @@
 package com.example.demo.security;
 
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import javax.crypto.SecretKey;
 import java.util.Date;
-import java.util.Map;
 
 @Component
 public class JwtUtil {
 
-    private final SecretKey SECRET_KEY =
-            Keys.hmacShaKeyFor("MY_SUPER_SECRET_KEY_1234567890123456".getBytes());
+    private final String SECRET = "THIS_IS_A_LONG_SECRET_KEY_FOR_JWT_256_ENCRYPTION_12345";
+    private final SecretKey key = Keys.hmacShaKeyFor(SECRET.getBytes());
 
-    // Extract username (email)
+    private final long EXPIRATION = 1000 * 60 * 60; // 1 hour
+
     public String extractUsername(String token) {
         return extractAllClaims(token).getSubject();
     }
 
-    // Extract expiration date
-    public Date extractExpiration(String token) {
-        return extractAllClaims(token).getExpiration();
+    public boolean isTokenValid(String token, UserDetails userDetails) {
+        final String username = extractUsername(token);
+        return (username.equals(userDetails.getUsername())) && !isTokenExpired(token);
     }
 
-    // Extract all claims — FIXED (no deprecated API)
+    private boolean isTokenExpired(String token) {
+        return extractAllClaims(token).getExpiration().before(new Date());
+    }
+
     private Claims extractAllClaims(String token) {
-        return Jwts
-                .parser()
-                .verifyWith(SECRET_KEY)
+        return Jwts.parserBuilder()
+                .setSigningKey(key)
                 .build()
-                .parseSignedClaims(token)
-                .getPayload();
+                .parseClaimsJws(token)
+                .getBody();
     }
 
-    public boolean isTokenExpired(String token) {
-        return extractExpiration(token).before(new Date());
-    }
-
-    // Generate Token — FIXED
     public String generateToken(UserDetails userDetails) {
         return Jwts.builder()
-                .subject(userDetails.getUsername())
-                .issuedAt(new Date())
-                .expiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10))
-                .signWith(SECRET_KEY)
+                .setSubject(userDetails.getUsername())
+                .setIssuedAt(new Date())
+                .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION))
+                .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
-    }
-
-    // Validate token — FIXED method signature
-    public boolean isTokenValid(String token, UserDetails userDetails) {
-        String username = extractUsername(token);
-        return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
     }
 }
