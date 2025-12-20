@@ -16,17 +16,11 @@ public class RecommendationController {
         this.engineService = engineService;
     }
 
-    /**
-     * Generate recommendation for a user
-     */
     @GetMapping("/{userId}")
     public List<RecommendationRecord> generate(@PathVariable Long userId) {
         return engineService.generateRecommendation(userId);
     }
 
-    /**
-     * Get all recommendations
-     */
     @GetMapping
     public List<RecommendationRecord> getAll() {
         return engineService.getAllRecommendations();
