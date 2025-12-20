@@ -5,5 +5,13 @@ import java.util.List;
 
 public interface RecommendationEngineService {
 
-    List<RecommendationRecord> getRecommendation(Long userId);
+    /**
+     * Generate recommendations for a specific user.
+     */
+    List<RecommendationRecord> generateRecommendation(Long userId);
+
+    /**
+     * Fetch all recommendations stored in the system.
+     */
+    List<RecommendationRecord> getAllRecommendations();
 }

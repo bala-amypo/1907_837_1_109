@@ -16,8 +16,20 @@ public class RecommendationEngineServiceImpl implements RecommendationEngineServ
         this.repo = repo;
     }
 
+    /**
+     * Generate recommendations for a given user.
+     * For now, simply fetches all existing recommendations for that user.
+     */
     @Override
-    public List<RecommendationRecord> getRecommendation(Long userId) {
+    public List<RecommendationRecord> generateRecommendation(Long userId) {
         return repo.findByUserId(userId);
+    }
+
+    /**
+     * Get all recommendations stored in the system.
+     */
+    @Override
+    public List<RecommendationRecord> getAllRecommendations() {
+        return repo.findAll();
     }
 }
