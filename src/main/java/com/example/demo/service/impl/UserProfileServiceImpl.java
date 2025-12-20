@@ -4,7 +4,6 @@ import com.example.demo.entity.UserProfile;
 import com.example.demo.exception.ResourceNotFoundException;
 import com.example.demo.repository.UserProfileRepository;
 import com.example.demo.service.UserProfileService;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -12,51 +11,49 @@ import java.util.List;
 @Service
 public class UserProfileServiceImpl implements UserProfileService {
 
-    private final UserProfileRepository userRepo;
-    private final PasswordEncoder passwordEncoder;
+    private final UserProfileRepository repo;
 
-    public UserProfileServiceImpl(UserProfileRepository userRepo, PasswordEncoder passwordEncoder) {
-        this.userRepo = userRepo;
-        this.passwordEncoder = passwordEncoder;
+    public UserProfileServiceImpl(UserProfileRepository repo) {
+        this.repo = repo;
     }
 
     @Override
     public UserProfile register(UserProfile user) {
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
-        return userRepo.save(user);
+        return repo.save(user);
     }
 
     @Override
     public UserProfile getUserById(Long id) {
-        return userRepo.findById(id)
+        return repo.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
     }
 
     @Override
     public List<UserProfile> getAllUsers() {
-        return userRepo.findAll();
+        return repo.findAll();
     }
 
     @Override
-    public UserProfile updateUser(Long id, UserProfile user) {
-        UserProfile existing = getUserById(id);
-        existing.setFullName(user.getFullName());
-        existing.setPhone(user.getPhone());
-        existing.setCity(user.getCity());
-        existing.setState(user.getState());
-        existing.setCountry(user.getCountry());
-        existing.setMonthlyIncome(user.getMonthlyIncome());
-        return userRepo.save(existing);
+    public UserProfile updateUser(Long id, UserProfile updated) {
+        UserProfile user = getUserById(id);
+
+        user.setFullName(updated.getFullName());
+        user.setPhone(updated.getPhone());
+        user.setCity(updated.getCity());
+        user.setState(updated.getState());
+        user.setCountry(updated.getCountry());
+        user.setMonthlyIncome(updated.getMonthlyIncome());
+
+        return repo.save(user);
     }
 
     @Override
     public void deleteUser(Long id) {
-        userRepo.deleteById(id);
+        repo.deleteById(id);
     }
 
     @Override
-    public UserProfile getByEmail(String email) {
-        return userRepo.findByEmail(email)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+    public UserProfile findByEmail(String email) {
+        return repo.findByEmail(email);
     }
 }

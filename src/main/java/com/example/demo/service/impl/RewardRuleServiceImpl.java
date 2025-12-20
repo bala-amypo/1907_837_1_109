@@ -34,13 +34,14 @@ public class RewardRuleServiceImpl implements RewardRuleService {
     }
 
     @Override
-    public RewardRule update(Long id, RewardRule rule) {
-        RewardRule existing = getById(id);
+    public RewardRule update(Long id, RewardRule updated) {
+        RewardRule r = getById(id);
 
-        existing.setCategory(rule.getCategory());
-        existing.setMultiplier(rule.getMultiplier());
+        r.setCategory(updated.getCategory());
+        r.setMerchant(updated.getMerchant());
+        r.setBonusPoints(updated.getBonusPoints());
 
-        return repo.save(existing);
+        return repo.save(r);
     }
 
     @Override

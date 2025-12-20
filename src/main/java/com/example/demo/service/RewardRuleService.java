@@ -11,7 +11,7 @@ public interface RewardRuleService {
 
     List<RewardRule> getAll();
 
-    RewardRule update(Long id, RewardRule rule);
+    RewardRule update(Long id, RewardRule updated);
 
     void delete(Long id);
 }

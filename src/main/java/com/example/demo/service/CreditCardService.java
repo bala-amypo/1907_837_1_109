@@ -11,7 +11,7 @@ public interface CreditCardService {
 
     List<CreditCardRecord> getAll();
 
-    CreditCardRecord update(Long id, CreditCardRecord card);
+    CreditCardRecord update(Long id, CreditCardRecord updated);
 
     void delete(Long id);
 }

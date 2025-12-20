@@ -11,9 +11,9 @@ public interface UserProfileService {
 
     List<UserProfile> getAllUsers();
 
-    UserProfile updateUser(Long id, UserProfile user);
+    UserProfile updateUser(Long id, UserProfile updatedUser);
 
     void deleteUser(Long id);
 
-    UserProfile getByEmail(String email);
+    UserProfile findByEmail(String email);
 }

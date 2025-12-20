@@ -34,15 +34,15 @@ public class CreditCardServiceImpl implements CreditCardService {
     }
 
     @Override
-    public CreditCardRecord update(Long id, CreditCardRecord card) {
-        CreditCardRecord existing = getById(id);
+    public CreditCardRecord update(Long id, CreditCardRecord updated) {
+        CreditCardRecord c = getById(id);
 
-        existing.setBank(card.getBank());
-        existing.setCardName(card.getCardName());
-        existing.setCategory(card.getCategory());
-        existing.setRewardPoints(card.getRewardPoints());
+        c.setCardName(updated.getCardName());
+        c.setBank(updated.getBank());
+        c.setCategory(updated.getCategory());
+        c.setRewardPoints(updated.getRewardPoints());
 
-        return repo.save(existing);
+        return repo.save(c);
     }
 
     @Override
