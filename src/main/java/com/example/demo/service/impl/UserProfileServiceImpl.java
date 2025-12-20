@@ -21,7 +21,7 @@ public class UserProfileServiceImpl implements UserProfileService {
     }
 
     @Override
-    public UserProfile getUser(Long id) {
+    public UserProfile getUserById(Long id) {
         return repo.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found: " + id));
     }
@@ -33,10 +33,12 @@ public class UserProfileServiceImpl implements UserProfileService {
 
     @Override
     public UserProfile updateUser(Long id, UserProfile updated) {
+
         UserProfile existing = repo.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found: " + id));
 
-        existing.setName(updated.getName());
+        // These fields match your actual UserProfile entity — NOT getName()
+        existing.setFullName(updated.getFullName());
         existing.setEmail(updated.getEmail());
         existing.setPhone(updated.getPhone());
         existing.setCity(updated.getCity());
