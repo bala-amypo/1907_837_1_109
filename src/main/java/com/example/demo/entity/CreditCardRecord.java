@@ -10,6 +10,8 @@ public class CreditCardRecord {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    private Long userId;   // ✅ ADD THIS FIELD
+
     private String cardName;
     private String bank;
     private String category;
@@ -18,12 +20,21 @@ public class CreditCardRecord {
     public CreditCardRecord() {}
 
     // Getters & Setters
+
     public Long getId() {
         return id;
     }
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public Long getUserId() {          // ✅ ADD GETTER
+        return userId;
+    }
+
+    public void setUserId(Long userId) { // ✅ ADD SETTER
+        this.userId = userId;
     }
 
     public String getCardName() {
