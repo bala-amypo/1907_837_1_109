@@ -1,35 +1,60 @@
 package com.example.demo.service.impl;
 
-import com.example.demo.entity.RecommendationRecord;
-import com.example.demo.repository.RecommendationRecordRepository;
+import com.example.demo.entity.*;
+import com.example.demo.repository.*;
 import com.example.demo.service.RecommendationEngineService;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
 public class RecommendationEngineServiceImpl implements RecommendationEngineService {
 
-    private final RecommendationRecordRepository repo;
+    private final CreditCardRecordRepository cardRepo;
+    private final PurchaseIntentRecordRepository intentRepo;
+    private final RecommendationRecordRepository recRepo;
 
-    public RecommendationEngineServiceImpl(RecommendationRecordRepository repo) {
-        this.repo = repo;
+    public RecommendationEngineServiceImpl(CreditCardRecordRepository cardRepo,
+                                           PurchaseIntentRecordRepository intentRepo,
+                                           RecommendationRecordRepository recRepo) {
+        this.cardRepo = cardRepo;
+        this.intentRepo = intentRepo;
+        this.recRepo = recRepo;
     }
 
-    /**
-     * Generate recommendations for a given user.
-     * For now, simply fetches all existing recommendations for that user.
-     */
     @Override
     public List<RecommendationRecord> generateRecommendation(Long userId) {
-        return repo.findByUserId(userId);
+
+        List<PurchaseIntentRecord> intents = intentRepo.findByUserId(userId);
+        List<CreditCardRecord> cards = cardRepo.findAll();
+
+        List<RecommendationRecord> finalRecs = new ArrayList<>();
+
+        for (PurchaseIntentRecord intent : intents) {
+            String category = intent.getCategory();
+
+            for (CreditCardRecord card : cards) {
+                if (category.equalsIgnoreCase(card.getCategory())) {
+
+                    RecommendationRecord rec = new RecommendationRecord();
+                    rec.setUserId(userId);
+                    rec.setCardId(card.getId());
+                    rec.setCardName(card.getCardName());
+                    rec.setCategory(category);
+                    rec.setTotalPoints(card.getRewardPoints());
+
+                    recRepo.save(rec);
+                    finalRecs.add(rec);
+                }
+            }
+        }
+
+        return finalRecs;
     }
 
-    /**
-     * Get all recommendations stored in the system.
-     */
     @Override
     public List<RecommendationRecord> getAllRecommendations() {
-        return repo.findAll();
+        return recRepo.findAll();
     }
 }
