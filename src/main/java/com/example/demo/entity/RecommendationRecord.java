@@ -25,14 +25,15 @@ public class RecommendationRecord {
     private LocalDateTime recommendedAt;
 
     @PrePersist
-    protected void onCreate() {
+    public void onPersist() {
         this.recommendedAt = LocalDateTime.now();
     }
 
     public RecommendationRecord() {}
 
-    // Getters and setters
+    // Getters & Setters
     public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
 
     public Long getUserId() { return userId; }
     public void setUserId(Long userId) { this.userId = userId; }
@@ -47,9 +48,8 @@ public class RecommendationRecord {
     public void setExpectedRewardValue(Double expectedRewardValue) { this.expectedRewardValue = expectedRewardValue; }
 
     public String getCalculationDetailsJson() { return calculationDetailsJson; }
-    public void setCalculationDetailsJson(String calculationDetailsJson) {
-        this.calculationDetailsJson = calculationDetailsJson;
-    }
+    public void setCalculationDetailsJson(String calculationDetailsJson) { this.calculationDetailsJson = calculationDetailsJson; }
 
     public LocalDateTime getRecommendedAt() { return recommendedAt; }
+    public void setRecommendedAt(LocalDateTime recommendedAt) { this.recommendedAt = recommendedAt; }
 }
