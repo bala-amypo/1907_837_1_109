@@ -3,46 +3,42 @@ package com.example.demo.security;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.stereotype.Component;
-import org.springframework.security.core.userdetails.UserDetails;
 
-import javax.crypto.SecretKey;
+import java.security.Key;
 import java.util.Date;
 
 @Component
 public class JwtUtil {
 
-    private final String SECRET = "THIS_IS_A_LONG_SECRET_KEY_FOR_JWT_256_ENCRYPTION_12345";
-    private final SecretKey key = Keys.hmacShaKeyFor(SECRET.getBytes());
-
-    private final long EXPIRATION = 1000 * 60 * 60; // 1 hour
+    private final String SECRET = "THIS_IS_SUPER_SECRET_KEY_12345678901234567890";
+    private final Key key = Keys.hmacShaKeyFor(SECRET.getBytes());
 
     public String extractUsername(String token) {
-        return extractAllClaims(token).getSubject();
+        return parseToken(token).getBody().getSubject();
     }
 
-    public boolean isTokenValid(String token, UserDetails userDetails) {
+    public boolean isTokenValid(String token, org.springframework.security.core.userdetails.UserDetails userDetails) {
         final String username = extractUsername(token);
-        return (username.equals(userDetails.getUsername())) && !isTokenExpired(token);
+        return (username.equals(userDetails.getUsername()) && !isExpired(token));
     }
 
-    private boolean isTokenExpired(String token) {
-        return extractAllClaims(token).getExpiration().before(new Date());
+    public String generateToken(String email) {
+        return Jwts.builder()
+                .setSubject(email)
+                .setIssuedAt(new Date())
+                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 24))
+                .signWith(key, SignatureAlgorithm.HS256)
+                .compact();
     }
 
-    private Claims extractAllClaims(String token) {
+    private boolean isExpired(String token) {
+        return parseToken(token).getBody().getExpiration().before(new Date());
+    }
+
+    private Jws<Claims> parseToken(String token) {
         return Jwts.parserBuilder()
                 .setSigningKey(key)
                 .build()
-                .parseClaimsJws(token)
-                .getBody();
-    }
-
-    public String generateToken(UserDetails userDetails) {
-        return Jwts.builder()
-                .setSubject(userDetails.getUsername())
-                .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION))
-                .signWith(key, SignatureAlgorithm.HS256)
-                .compact();
+                .parseClaimsJws(token);
     }
 }
