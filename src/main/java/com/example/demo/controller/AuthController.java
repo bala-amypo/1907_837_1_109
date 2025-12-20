@@ -5,11 +5,10 @@ import com.example.demo.dto.LoginRequest;
 import com.example.demo.dto.RegisterRequest;
 import com.example.demo.entity.UserProfile;
 import com.example.demo.security.JwtUtil;
-import com.example.demo.security.CustomUserDetailsService;
 import com.example.demo.service.UserProfileService;
+
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -19,16 +18,13 @@ public class AuthController {
     private final UserProfileService userService;
     private final AuthenticationManager authManager;
     private final JwtUtil jwtUtil;
-    private final CustomUserDetailsService customUserDetailsService;
 
     public AuthController(UserProfileService userService,
                           AuthenticationManager authManager,
-                          JwtUtil jwtUtil,
-                          CustomUserDetailsService customUserDetailsService) {
+                          JwtUtil jwtUtil) {
         this.userService = userService;
         this.authManager = authManager;
         this.jwtUtil = jwtUtil;
-        this.customUserDetailsService = customUserDetailsService;
     }
 
     @PostMapping("/register")
@@ -50,16 +46,15 @@ public class AuthController {
     @PostMapping("/login")
     public JwtResponse login(@RequestBody LoginRequest req) {
 
-        // Step 1 — Authenticate credentials
         authManager.authenticate(
-                new UsernamePasswordAuthenticationToken(req.getEmail(), req.getPassword())
+                new UsernamePasswordAuthenticationToken(
+                        req.getEmail(),
+                        req.getPassword()
+                )
         );
 
-        // Step 2 — Load UserDetails
-        UserDetails userDetails = customUserDetailsService.loadUserByUsername(req.getEmail());
-
-        // Step 3 — Generate token
-        String token = jwtUtil.generateToken(userDetails);
+        // 🔥 FIXED: Pass email string (NOT UserDetails)
+        String token = jwtUtil.generateToken(req.getEmail());
 
         return new JwtResponse(token);
     }
