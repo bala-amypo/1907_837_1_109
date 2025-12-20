@@ -2,17 +2,19 @@ package com.example.demo.controller;
 
 import com.example.demo.entity.RewardRule;
 import com.example.demo.service.RewardRuleService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/reward-rules")
+@RequestMapping("/api/rules")
 public class RewardRuleController {
 
-    @Autowired
-    private RewardRuleService ruleService;
+    private final RewardRuleService ruleService;
+
+    public RewardRuleController(RewardRuleService ruleService) {
+        this.ruleService = ruleService;
+    }
 
     @PostMapping
     public RewardRule create(@RequestBody RewardRule rule) {
@@ -20,7 +22,7 @@ public class RewardRuleController {
     }
 
     @GetMapping("/{id}")
-    public RewardRule get(@PathVariable Long id) {
+    public RewardRule getById(@PathVariable Long id) {
         return ruleService.getById(id);
     }
 
@@ -35,8 +37,7 @@ public class RewardRuleController {
     }
 
     @DeleteMapping("/{id}")
-    public String delete(@PathVariable Long id) {
+    public void delete(@PathVariable Long id) {
         ruleService.delete(id);
-        return "Rule deleted";
     }
 }

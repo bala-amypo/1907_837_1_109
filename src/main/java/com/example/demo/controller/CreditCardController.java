@@ -2,17 +2,19 @@ package com.example.demo.controller;
 
 import com.example.demo.entity.CreditCardRecord;
 import com.example.demo.service.CreditCardService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/credit-cards")
+@RequestMapping("/api/cards")
 public class CreditCardController {
 
-    @Autowired
-    private CreditCardService cardService;
+    private final CreditCardService cardService;
+
+    public CreditCardController(CreditCardService cardService) {
+        this.cardService = cardService;
+    }
 
     @PostMapping
     public CreditCardRecord create(@RequestBody CreditCardRecord card) {
@@ -20,7 +22,7 @@ public class CreditCardController {
     }
 
     @GetMapping("/{id}")
-    public CreditCardRecord get(@PathVariable Long id) {
+    public CreditCardRecord getById(@PathVariable Long id) {
         return cardService.getById(id);
     }
 
@@ -35,8 +37,7 @@ public class CreditCardController {
     }
 
     @DeleteMapping("/{id}")
-    public String delete(@PathVariable Long id) {
+    public void delete(@PathVariable Long id) {
         cardService.delete(id);
-        return "Card deleted";
     }
 }
