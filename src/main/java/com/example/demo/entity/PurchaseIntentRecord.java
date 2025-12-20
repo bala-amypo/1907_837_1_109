@@ -22,14 +22,15 @@ public class PurchaseIntentRecord {
     private LocalDateTime intentDate;
 
     @PrePersist
-    protected void onCreate() {
+    public void onCreate() {
         this.intentDate = LocalDateTime.now();
     }
 
     public PurchaseIntentRecord() {}
 
-    // Getters and setters
+    // Getters & Setters
     public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
 
     public Long getUserId() { return userId; }
     public void setUserId(Long userId) { this.userId = userId; }
@@ -44,4 +45,5 @@ public class PurchaseIntentRecord {
     public void setMerchant(String merchant) { this.merchant = merchant; }
 
     public LocalDateTime getIntentDate() { return intentDate; }
+    public void setIntentDate(LocalDateTime intentDate) { this.intentDate = intentDate; }
 }
