@@ -1,7 +1,6 @@
 package com.example.demo.entity;
 
 import jakarta.persistence.*;
-import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "purchase_intents")
@@ -12,38 +11,41 @@ public class PurchaseIntentRecord {
     private Long id;
 
     private Long userId;
-
-    private Double amount;
-
     private String category;
-
-    private String merchant;
-
-    private LocalDateTime intentDate;
-
-    @PrePersist
-    public void onCreate() {
-        this.intentDate = LocalDateTime.now();
-    }
+    private Double amount;
 
     public PurchaseIntentRecord() {}
 
     // Getters & Setters
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
+    public Long getId() {
+        return id;
+    }
 
-    public Long getUserId() { return userId; }
-    public void setUserId(Long userId) { this.userId = userId; }
+    public void setId(Long id) {
+        this.id = id;
+    }
 
-    public Double getAmount() { return amount; }
-    public void setAmount(Double amount) { this.amount = amount; }
+    public Long getUserId() {
+        return userId;
+    }
 
-    public String getCategory() { return category; }
-    public void setCategory(String category) { this.category = category; }
+    public void setUserId(Long userId) {
+        this.userId = userId;
+    }
 
-    public String getMerchant() { return merchant; }
-    public void setMerchant(String merchant) { this.merchant = merchant; }
+    public String getCategory() {
+        return category;
+    }
 
-    public LocalDateTime getIntentDate() { return intentDate; }
-    public void setIntentDate(LocalDateTime intentDate) { this.intentDate = intentDate; }
+    public void setCategory(String category) {
+        this.category = category;
+    }
+
+    public Double getAmount() {
+        return amount;
+    }
+
+    public void setAmount(Double amount) {
+        this.amount = amount;
+    }
 }

@@ -3,34 +3,58 @@ package com.example.demo.entity;
 import jakarta.persistence.*;
 
 @Entity
+@Table(name = "credit_cards")
 public class CreditCardRecord {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String bank;
     private String cardName;
+    private String bank;
     private String category;
     private Integer rewardPoints;
 
-    // getters
-    public Long getId() { return id; }
+    public CreditCardRecord() {}
 
-    public String getBank() { return bank; }
+    // Getters & Setters
+    public Long getId() {
+        return id;
+    }
 
-    public String getCardName() { return cardName; }
+    public void setId(Long id) {
+        this.id = id;
+    }
 
-    public String getCategory() { return category; }
+    public String getCardName() {
+        return cardName;
+    }
 
-    public Integer getRewardPoints() { return rewardPoints; }
+    public void setCardName(String cardName) {
+        this.cardName = cardName;
+    }
 
-    // setters
-    public void setBank(String bank) { this.bank = bank; }
+    public String getBank() {
+        return bank;
+    }
 
-    public void setCardName(String cardName) { this.cardName = cardName; }
+    public void setBank(String bank) {
+        this.bank = bank;
+    }
 
-    public void setCategory(String category) { this.category = category; }
+    public String getCategory() {
+        return category;
+    }
 
-    public void setRewardPoints(Integer rewardPoints) { this.rewardPoints = rewardPoints; }
+    public void setCategory(String category) {
+        this.category = category;
+    }
+
+    public Integer getRewardPoints() {
+        return rewardPoints;
+    }
+
+    public void setRewardPoints(Integer rewardPoints) {
+        this.rewardPoints = rewardPoints;
+    }
 }

@@ -1,7 +1,6 @@
 package com.example.demo.entity;
 
 import jakarta.persistence.*;
-import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "recommendations")
@@ -12,44 +11,59 @@ public class RecommendationRecord {
     private Long id;
 
     private Long userId;
-
-    private Long purchaseIntentId;
-
-    private Long recommendedCardId;
-
-    private Double expectedRewardValue;
-
-    @Column(columnDefinition = "TEXT")
-    private String calculationDetailsJson;
-
-    private LocalDateTime recommendedAt;
-
-    @PrePersist
-    public void onPersist() {
-        this.recommendedAt = LocalDateTime.now();
-    }
+    private Long cardId;
+    private String cardName;
+    private String category;
+    private Integer totalPoints;
 
     public RecommendationRecord() {}
 
     // Getters & Setters
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
+    public Long getId() {
+        return id;
+    }
 
-    public Long getUserId() { return userId; }
-    public void setUserId(Long userId) { this.userId = userId; }
+    public void setId(Long id) {
+        this.id = id;
+    }
 
-    public Long getPurchaseIntentId() { return purchaseIntentId; }
-    public void setPurchaseIntentId(Long purchaseIntentId) { this.purchaseIntentId = purchaseIntentId; }
+    public Long getUserId() {
+        return userId;
+    }
 
-    public Long getRecommendedCardId() { return recommendedCardId; }
-    public void setRecommendedCardId(Long recommendedCardId) { this.recommendedCardId = recommendedCardId; }
+    public void setUserId(Long userId) {
+        this.userId = userId;
+    }
 
-    public Double getExpectedRewardValue() { return expectedRewardValue; }
-    public void setExpectedRewardValue(Double expectedRewardValue) { this.expectedRewardValue = expectedRewardValue; }
+    public Long getCardId() {
+        return cardId;
+    }
 
-    public String getCalculationDetailsJson() { return calculationDetailsJson; }
-    public void setCalculationDetailsJson(String calculationDetailsJson) { this.calculationDetailsJson = calculationDetailsJson; }
+    public void setCardId(Long cardId) {
+        this.cardId = cardId;
+    }
 
-    public LocalDateTime getRecommendedAt() { return recommendedAt; }
-    public void setRecommendedAt(LocalDateTime recommendedAt) { this.recommendedAt = recommendedAt; }
+    public String getCardName() {
+        return cardName;
+    }
+
+    public void setCardName(String cardName) {
+        this.cardName = cardName;
+    }
+
+    public String getCategory() {
+        return category;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
+    }
+
+    public Integer getTotalPoints() {
+        return totalPoints;
+    }
+
+    public void setTotalPoints(Integer totalPoints) {
+        this.totalPoints = totalPoints;
+    }
 }
