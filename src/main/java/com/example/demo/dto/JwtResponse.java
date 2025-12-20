@@ -5,26 +5,35 @@ public class JwtResponse {
     private String token;
     private Long userId;
     private String email;
-    private String role;
+    private String fullName;
 
     public JwtResponse() {}
 
-    public JwtResponse(String token, Long userId, String email, String role) {
+    // REQUIRED for AuthController
+    public JwtResponse(String token) {
+        this.token = token;
+    }
+
+    public JwtResponse(String token, Long userId, String email, String fullName) {
         this.token = token;
         this.userId = userId;
         this.email = email;
-        this.role = role;
+        this.fullName = fullName;
     }
 
-    public String getToken() { return token; }
-    public void setToken(String token) { this.token = token; }
+    public String getToken() {
+        return token;
+    }
 
-    public Long getUserId() { return userId; }
-    public void setUserId(Long userId) { this.userId = userId; }
+    public Long getUserId() {
+        return userId;
+    }
 
-    public String getEmail() { return email; }
-    public void setEmail(String email) { this.email = email; }
+    public String getEmail() {
+        return email;
+    }
 
-    public String getRole() { return role; }
-    public void setRole(String role) { this.role = role; }
+    public String getFullName() {
+        return fullName;
+    }
 }
