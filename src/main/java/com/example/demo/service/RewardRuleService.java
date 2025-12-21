@@ -7,7 +7,7 @@ public interface RewardRuleService {
 
     RewardRule createRule(RewardRule rule);
 
-    RewardRule getRuleById(Long id);
+    RewardRule getRule(Long id);
 
     List<RewardRule> getAllRules();
 
