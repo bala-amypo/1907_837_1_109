@@ -14,11 +14,15 @@ public class RewardRule {
     private String category;
     private boolean active;
 
-    private Double multiplier;   // ✔ for reward calculation
-
+    private String ruleName;
+    private Integer rewardPoints;
     private String description;
 
-    // Getters & Setters
+    private String merchant;
+    private Integer bonusPoints;
+
+    public RewardRule() {}
+
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
@@ -31,9 +35,18 @@ public class RewardRule {
     public boolean isActive() { return active; }
     public void setActive(boolean active) { this.active = active; }
 
-    public Double getMultiplier() { return multiplier; }
-    public void setMultiplier(Double multiplier) { this.multiplier = multiplier; }
+    public String getRuleName() { return ruleName; }
+    public void setRuleName(String ruleName) { this.ruleName = ruleName; }
+
+    public Integer getRewardPoints() { return rewardPoints; }
+    public void setRewardPoints(Integer rewardPoints) { this.rewardPoints = rewardPoints; }
 
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }
+
+    public String getMerchant() { return merchant; }
+    public void setMerchant(String merchant) { this.merchant = merchant; }
+
+    public Integer getBonusPoints() { return bonusPoints; }
+    public void setBonusPoints(Integer bonusPoints) { this.bonusPoints = bonusPoints; }
 }

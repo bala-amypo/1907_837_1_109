@@ -5,13 +5,13 @@ import java.util.List;
 
 public interface RewardRuleService {
 
-    RewardRule create(RewardRule rule);
+    RewardRule createRule(RewardRule rule);
 
-    RewardRule getById(Long id);
+    RewardRule getRuleById(Long id);
 
-    List<RewardRule> getAll();
+    List<RewardRule> getAllRules();
 
-    RewardRule update(Long id, RewardRule updated);
+    RewardRule updateRule(Long id, RewardRule updated);
 
-    void delete(Long id);
+    void deleteRule(Long id);
 }
