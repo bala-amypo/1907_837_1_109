@@ -10,9 +10,13 @@ public class RewardRule {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String merchant;
-    private String category;
-    private int bonusPoints;
+    private Long cardId;        // REQUIRED for JPQL
+    private String category;    // REQUIRED for JPQL
+    private boolean active;     // REQUIRED for JPQL
+
+    private String ruleName;
+    private Integer rewardPoints;
+    private String description;
 
     public RewardRule() {}
 
@@ -25,12 +29,12 @@ public class RewardRule {
         this.id = id;
     }
 
-    public String getMerchant() {
-        return merchant;
+    public Long getCardId() {
+        return cardId;
     }
 
-    public void setMerchant(String merchant) {
-        this.merchant = merchant;
+    public void setCardId(Long cardId) {
+        this.cardId = cardId;
     }
 
     public String getCategory() {
@@ -41,11 +45,35 @@ public class RewardRule {
         this.category = category;
     }
 
-    public int getBonusPoints() {
-        return bonusPoints;
+    public boolean isActive() {
+        return active;
     }
 
-    public void setBonusPoints(int bonusPoints) {
-        this.bonusPoints = bonusPoints;
+    public void setActive(boolean active) {
+        this.active = active;
+    }
+
+    public String getRuleName() {
+        return ruleName;
+    }
+
+    public void setRuleName(String ruleName) {
+        this.ruleName = ruleName;
+    }
+
+    public Integer getRewardPoints() {
+        return rewardPoints;
+    }
+
+    public void setRewardPoints(Integer rewardPoints) {
+        this.rewardPoints = rewardPoints;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 }
