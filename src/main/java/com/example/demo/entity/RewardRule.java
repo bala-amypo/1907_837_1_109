@@ -15,13 +15,18 @@ public class RewardRule {
     private boolean active;
 
     private String ruleName;
-    private Integer rewardPoints;
+    private Integer rewardPoints;   // NOT USED by engine but OK
     private String description;
 
     private String merchant;
     private Integer bonusPoints;
 
+    // 🔥 REQUIRED FIELD: MULTIPLIER (for recommendation engine)
+    private Double multiplier;   // <-- THIS IS THE FIX
+
     public RewardRule() {}
+
+    // ---------------------- Getters & Setters -----------------------
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -49,4 +54,8 @@ public class RewardRule {
 
     public Integer getBonusPoints() { return bonusPoints; }
     public void setBonusPoints(Integer bonusPoints) { this.bonusPoints = bonusPoints; }
+
+    // 🔥 The missing getter/setter
+    public Double getMultiplier() { return multiplier; }
+    public void setMultiplier(Double multiplier) { this.multiplier = multiplier; }
 }
