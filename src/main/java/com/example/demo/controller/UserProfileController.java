@@ -10,34 +10,35 @@ import java.util.List;
 @RequestMapping("/api/users")
 public class UserProfileController {
 
-    private final UserProfileService userService;
+    private final UserProfileService service;
 
-    public UserProfileController(UserProfileService userService) {
-        this.userService = userService;
+    public UserProfileController(UserProfileService service) {
+        this.service = service;
     }
 
     @PostMapping
-    public UserProfile create(@RequestBody UserProfile user) {
-        return userService.register(user);
-    }
-
-    @GetMapping("/{id}")
-    public UserProfile getById(@PathVariable Long id) {
-        return userService.getUserById(id);
+    public UserProfile createUser(@RequestBody UserProfile user) {
+        return service.register(user);
     }
 
     @GetMapping
-    public List<UserProfile> getAll() {
-        return userService.getAllUsers();
+    public List<UserProfile> getAllUsers() {
+        return service.getAllUsers();
+    }
+
+    @GetMapping("/{id}")
+    public UserProfile getUser(@PathVariable Long id) {
+        return service.getUserById(id);
     }
 
     @PutMapping("/{id}")
-    public UserProfile update(@PathVariable Long id, @RequestBody UserProfile user) {
-        return userService.updateUser(id, user);
+    public UserProfile updateUser(@PathVariable Long id, @RequestBody UserProfile user) {
+        return service.updateUser(id, user);
     }
 
     @DeleteMapping("/{id}")
-    public void delete(@PathVariable Long id) {
-        userService.deleteUser(id);
+    public String deleteUser(@PathVariable Long id) {
+        service.deleteUser(id);
+        return "User deleted successfully";
     }
 }
