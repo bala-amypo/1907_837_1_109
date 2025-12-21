@@ -33,7 +33,7 @@ public class AuthController {
         UserProfile user = new UserProfile();
         user.setFullName(req.getFullName());
         user.setEmail(req.getEmail());
-        user.setPassword(req.getPassword());
+        user.setPassword(req.getPassword()); // plain here, encoded later in service
         user.setPhone(req.getPhone());
         user.setCity(req.getCity());
         user.setState(req.getState());
@@ -53,9 +53,7 @@ public class AuthController {
                 )
         );
 
-        // 🔥 FIXED: Pass email string (NOT UserDetails)
         String token = jwtUtil.generateToken(req.getEmail());
-
         return new JwtResponse(token);
     }
 }

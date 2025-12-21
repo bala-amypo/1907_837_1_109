@@ -3,6 +3,8 @@ package com.example.demo.service.impl;
 import com.example.demo.entity.UserProfile;
 import com.example.demo.repository.UserProfileRepository;
 import com.example.demo.service.UserProfileService;
+
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -11,13 +13,20 @@ import java.util.List;
 public class UserProfileServiceImpl implements UserProfileService {
 
     private final UserProfileRepository userRepo;
+    private final PasswordEncoder passwordEncoder;
 
-    public UserProfileServiceImpl(UserProfileRepository userRepo) {
+    public UserProfileServiceImpl(UserProfileRepository userRepo,
+                                  PasswordEncoder passwordEncoder) {
         this.userRepo = userRepo;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
     public UserProfile register(UserProfile user) {
+
+        // 🔥 ENCODE PASSWORD BEFORE SAVE
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
+
         return userRepo.save(user);
     }
 
@@ -34,8 +43,8 @@ public class UserProfileServiceImpl implements UserProfileService {
 
     @Override
     public UserProfile updateUser(Long id, UserProfile updatedUser) {
-        UserProfile existing = userRepo.findById(id)
-                .orElseThrow(() -> new RuntimeException("User not found: " + id));
+
+        UserProfile existing = getUserById(id);
 
         existing.setFullName(updatedUser.getFullName());
         existing.setEmail(updatedUser.getEmail());
@@ -44,6 +53,11 @@ public class UserProfileServiceImpl implements UserProfileService {
         existing.setState(updatedUser.getState());
         existing.setCountry(updatedUser.getCountry());
         existing.setMonthlyIncome(updatedUser.getMonthlyIncome());
+
+        // 🔥 If password changed → encode again
+        if (updatedUser.getPassword() != null && !updatedUser.getPassword().isBlank()) {
+            existing.setPassword(passwordEncoder.encode(updatedUser.getPassword()));
+        }
 
         return userRepo.save(existing);
     }
@@ -57,7 +71,6 @@ public class UserProfileServiceImpl implements UserProfileService {
     public UserProfile findByEmail(String email) {
         return userRepo.findByEmail(email)
                 .orElseThrow(() ->
-                        new RuntimeException("User not found with email: " + email)
-                );
+                        new RuntimeException("User not found with email: " + email));
     }
 }
