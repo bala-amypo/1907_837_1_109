@@ -9,6 +9,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class UserProfileServiceImpl implements UserProfileService {
 
@@ -20,27 +22,44 @@ public class UserProfileServiceImpl implements UserProfileService {
 
     @Override
     public UserProfile register(UserProfile user) {
-
-        // Check if email already exists
-        if (repo.findByEmail(user.getEmail()).isPresent()) {
-            throw new RuntimeException("Email already registered");
-        }
-
-        // Encode the password before storing
         user.setPassword(passwordEncoder.encode(user.getPassword()));
-
         return repo.save(user);
-    }
-
-    @Override
-    public UserProfile getUserByEmail(String email) {
-        return repo.findByEmail(email)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + email));
     }
 
     @Override
     public UserProfile getUserById(Long id) {
         return repo.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+    }
+
+    @Override
+    public UserProfile getUserByEmail(String email) {
+        return repo.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+    }
+
+    @Override
+    public List<UserProfile> getAllUsers() {
+        return repo.findAll();
+    }
+
+    @Override
+    public UserProfile updateUser(Long id, UserProfile updated) {
+        UserProfile existing = getUserById(id);
+
+        existing.setFullName(updated.getFullName());
+        existing.setPhone(updated.getPhone());
+        existing.setCity(updated.getCity());
+        existing.setState(updated.getState());
+        existing.setCountry(updated.getCountry());
+        existing.setMonthlyIncome(updated.getMonthlyIncome());
+
+        return repo.save(existing);
+    }
+
+    @Override
+    public void deleteUser(Long id) {
+        UserProfile user = getUserById(id);
+        repo.delete(user);
     }
 }
