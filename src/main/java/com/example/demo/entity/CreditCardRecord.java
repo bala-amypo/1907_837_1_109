@@ -10,7 +10,8 @@ public class CreditCardRecord {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private Long userId;   // ✅ ADD THIS FIELD
+    private Long userId;     // REQUIRED by repository
+    private String status;   // REQUIRED by findActiveCardsByUser()
 
     private String cardName;
     private String bank;
@@ -29,12 +30,20 @@ public class CreditCardRecord {
         this.id = id;
     }
 
-    public Long getUserId() {          // ✅ ADD GETTER
+    public Long getUserId() {
         return userId;
     }
 
-    public void setUserId(Long userId) { // ✅ ADD SETTER
+    public void setUserId(Long userId) {
         this.userId = userId;
+    }
+
+    public String getStatus() { 
+        return status; 
+    }
+
+    public void setStatus(String status) { 
+        this.status = status; 
     }
 
     public String getCardName() {
