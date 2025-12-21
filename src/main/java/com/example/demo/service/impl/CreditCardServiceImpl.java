@@ -18,35 +18,40 @@ public class CreditCardServiceImpl implements CreditCardService {
     }
 
     @Override
-    public CreditCardRecord create(CreditCardRecord card) {
+    public CreditCardRecord addCard(CreditCardRecord card) {
+        if (card.getAnnualFee() < 0) {
+            throw new RuntimeException("Annual fee must be ≥ 0");
+        }
         return repo.save(card);
     }
 
     @Override
-    public CreditCardRecord getById(Long id) {
+    public CreditCardRecord updateCard(Long id, CreditCardRecord updated) {
+        CreditCardRecord existing = repo.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Card not found"));
+
+        existing.setCardName(updated.getCardName());
+        existing.setIssuer(updated.getIssuer());
+        existing.setCardType(updated.getCardType());
+        existing.setAnnualFee(updated.getAnnualFee());
+        existing.setStatus(updated.getStatus());
+
+        return repo.save(existing);
+    }
+
+    @Override
+    public List<CreditCardRecord> getCardsByUser(Long userId) {
+        return repo.findByUserId(userId);
+    }
+
+    @Override
+    public CreditCardRecord getCardById(Long id) {
         return repo.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Card not found"));
     }
 
     @Override
-    public List<CreditCardRecord> getAll() {
+    public List<CreditCardRecord> getAllCards() {
         return repo.findAll();
-    }
-
-    @Override
-    public CreditCardRecord update(Long id, CreditCardRecord updated) {
-        CreditCardRecord c = getById(id);
-
-        c.setCardName(updated.getCardName());
-        c.setBank(updated.getBank());
-        c.setCategory(updated.getCategory());
-        c.setRewardPoints(updated.getRewardPoints());
-
-        return repo.save(c);
-    }
-
-    @Override
-    public void delete(Long id) {
-        repo.deleteById(id);
     }
 }
