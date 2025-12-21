@@ -10,13 +10,17 @@ public class RewardRule {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private Long cardId;        // REQUIRED for JPQL
-    private String category;    // REQUIRED for JPQL
-    private boolean active;     // REQUIRED for JPQL
+    private Long cardId;
+    private String category;
+    private boolean active;
 
     private String ruleName;
     private Integer rewardPoints;
     private String description;
+
+    // 🔥 Fields your service is expecting
+    private String merchant;
+    private Integer bonusPoints;
 
     public RewardRule() {}
 
@@ -75,5 +79,22 @@ public class RewardRule {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    // 🔥 Newly added fields
+    public String getMerchant() {
+        return merchant;
+    }
+
+    public void setMerchant(String merchant) {
+        this.merchant = merchant;
+    }
+
+    public Integer getBonusPoints() {
+        return bonusPoints;
+    }
+
+    public void setBonusPoints(Integer bonusPoints) {
+        this.bonusPoints = bonusPoints;
     }
 }

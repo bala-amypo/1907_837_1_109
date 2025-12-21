@@ -10,6 +10,4 @@ public interface RewardRuleRepository extends JpaRepository<RewardRule, Long> {
 
     @Query("SELECT r FROM RewardRule r WHERE r.cardId = :cardId AND r.category = :category AND r.active = true")
     List<RewardRule> findActiveRulesForCardCategory(Long cardId, String category);
-
-    List<RewardRule> findByActiveTrue();
 }
