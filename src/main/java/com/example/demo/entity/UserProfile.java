@@ -3,28 +3,32 @@ package com.example.demo.entity;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "user_profiles")
+@Table(name = "user_profiles")   // MUST match your DB table name
 public class UserProfile {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "user_id")   // IMPORTANT !!!
-    private Long id;
+    private Long id;   // Primary Key (AUTO_INCREMENT)
 
-    @Column(name = "full_name")
+    @Column(nullable = false)
     private String fullName;
 
+    @Column(nullable = false, unique = true)
     private String email;
+
+    @Column(nullable = false)
     private String password;
+
     private String phone;
     private String city;
     private String state;
     private String country;
 
-    @Column(name = "monthly_income")
     private Double monthlyIncome;
 
-    // ---------- GETTERS & SETTERS ----------
+    public UserProfile() {}
+
+    // Getters & Setters
 
     public Long getId() {
         return id;
