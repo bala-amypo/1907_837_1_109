@@ -4,11 +4,13 @@ import com.example.demo.dto.JwtResponse;
 import com.example.demo.dto.LoginRequest;
 import com.example.demo.dto.RegisterRequest;
 import com.example.demo.entity.UserProfile;
+
 import com.example.demo.security.JwtUtil;
 import com.example.demo.service.UserProfileService;
 
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -33,7 +35,7 @@ public class AuthController {
         UserProfile user = new UserProfile();
         user.setFullName(req.getFullName());
         user.setEmail(req.getEmail());
-        user.setPassword(req.getPassword()); // plain here, encoded later in service
+        user.setPassword(req.getPassword());
         user.setPhone(req.getPhone());
         user.setCity(req.getCity());
         user.setState(req.getState());
