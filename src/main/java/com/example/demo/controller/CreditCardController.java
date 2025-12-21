@@ -1,6 +1,6 @@
 package com.example.demo.controller;
 
-import com.example.demo.entity.CCreditCardRecord;
+import com.example.demo.entity.CreditCardRecord;
 import com.example.demo.service.CreditCardService;
 import org.springframework.web.bind.annotation.*;
 

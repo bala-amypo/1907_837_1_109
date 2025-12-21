@@ -1,56 +1,116 @@
 package com.example.demo.service.impl;
 
-import com.example.demo.entity.*;
-import com.example.demo.repository.*;
+import com.example.demo.entity.PurchaseIntentRecord;
+import com.example.demo.entity.CreditCardRecord;
+import com.example.demo.entity.RewardRule;
+import com.example.demo.entity.RecommendationRecord;
+
+import com.example.demo.exception.ResourceNotFoundException;
+import com.example.demo.repository.PurchaseIntentRecordRepository;
+import com.example.demo.repository.UserProfileRepository;
+import com.example.demo.repository.CreditCardRecordRepository;
+import com.example.demo.repository.RewardRuleRepository;
+import com.example.demo.repository.RecommendationRecordRepository;
+
 import com.example.demo.service.RecommendationEngineService;
+
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
 public class RecommendationEngineServiceImpl implements RecommendationEngineService {
 
-    private final CreditCardRecordRepository cardRepo;
     private final PurchaseIntentRecordRepository intentRepo;
+    private final UserProfileRepository userRepo;
+    private final CreditCardRecordRepository cardRepo;
+    private final RewardRuleRepository ruleRepo;
     private final RecommendationRecordRepository recRepo;
 
-    public RecommendationEngineServiceImpl(CreditCardRecordRepository cardRepo,
-                                           PurchaseIntentRecordRepository intentRepo,
-                                           RecommendationRecordRepository recRepo) {
-        this.cardRepo = cardRepo;
+    public RecommendationEngineServiceImpl(
+            PurchaseIntentRecordRepository intentRepo,
+            UserProfileRepository userRepo,
+            CreditCardRecordRepository cardRepo,
+            RewardRuleRepository ruleRepo,
+            RecommendationRecordRepository recRepo
+    ) {
         this.intentRepo = intentRepo;
+        this.userRepo = userRepo;
+        this.cardRepo = cardRepo;
+        this.ruleRepo = ruleRepo;
         this.recRepo = recRepo;
     }
 
     @Override
-    public List<RecommendationRecord> generateRecommendation(Long userId) {
+    public RecommendationRecord generateRecommendation(Long intentId) {
 
-        List<PurchaseIntentRecord> intents = intentRepo.findByUserId(userId);
-        List<CreditCardRecord> cards = cardRepo.findAll();
+        // 1️⃣ Fetch Intent
+        PurchaseIntentRecord intent = intentRepo.findById(intentId)
+                .orElseThrow(() -> new ResourceNotFoundException("Intent not found"));
 
-        List<RecommendationRecord> finalRecs = new ArrayList<>();
+        Long userId = intent.getUserId();
+        String category = intent.getCategory();
+        double amount = intent.getAmount();
 
-        for (PurchaseIntentRecord intent : intents) {
-            String category = intent.getCategory();
+        // 2️⃣ Fetch user cards
+        List<CreditCardRecord> activeCards = cardRepo.findActiveCardsByUser(userId);
 
-            for (CreditCardRecord card : cards) {
-                if (category.equalsIgnoreCase(card.getCategory())) {
+        if (activeCards.isEmpty()) {
+            throw new ResourceNotFoundException("User has no active cards");
+        }
 
-                    RecommendationRecord rec = new RecommendationRecord();
-                    rec.setUserId(userId);
-                    rec.setCardId(card.getId());
-                    rec.setCardName(card.getCardName());
-                    rec.setCategory(category);
-                    rec.setTotalPoints(card.getRewardPoints());
+        double bestReward = -1;
+        Long bestCardId = null;
+        String calcJson = "";
 
-                    recRepo.save(rec);
-                    finalRecs.add(rec);
+        // 3️⃣ For each card → fetch active rules for this card + category
+        for (CreditCardRecord card : activeCards) {
+
+            List<RewardRule> rules =
+                    ruleRepo.findActiveRulesForCardCategory(card.getId(), category);
+
+            for (RewardRule rule : rules) {
+
+                double reward = amount * rule.getMultiplier();
+
+                if (reward > bestReward) {
+                    bestReward = reward;
+                    bestCardId = card.getId();
+                    calcJson = "{ \"cardId\": " + card.getId() +
+                            ", \"ruleId\": " + rule.getId() +
+                            ", \"reward\": " + reward +
+                            "}";
                 }
             }
         }
 
-        return finalRecs;
+        if (bestCardId == null) {
+            throw new ResourceNotFoundException("No reward rules match this category");
+        }
+
+        // 4️⃣ Save Recommendation
+        RecommendationRecord rec = new RecommendationRecord();
+        rec.setUserId(userId);
+        rec.setPurchaseIntentId(intentId);
+        rec.setRecommendedCardId(bestCardId);
+        rec.setExpectedRewardValue(bestReward);
+        rec.setCalculationDetailsJson(calcJson);
+        rec.setRecommendedAt(LocalDateTime.now());
+
+        return recRepo.save(rec);
+    }
+
+
+    @Override
+    public RecommendationRecord getRecommendationById(Long id) {
+        return recRepo.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Recommendation not found"));
+    }
+
+    @Override
+    public List<RecommendationRecord> getRecommendationsByUser(Long userId) {
+        return recRepo.findByUserId(userId);
     }
 
     @Override
