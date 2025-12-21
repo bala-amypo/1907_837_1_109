@@ -11,23 +11,16 @@ public class CreditCardRecord {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
-    private Long userId;  // foreign key
-
-    @Column(nullable = false)
+    private Long userId;
     private String cardName;
-
-    @Column(nullable = false)
-    private String issuer; // bank name
-
-    @Column(nullable = false)
+    private String issuer;
     private String cardType;
-
-    @Column(nullable = false)
     private Double annualFee;
-
-    @Column(nullable = false)
     private String status;
+
+    // 🔥 ADD THESE FIELDS FOR THE RECOMMENDATION ENGINE
+    private String category;
+    private Integer rewardPoints;
 
     private LocalDateTime createdAt;
 
@@ -36,7 +29,6 @@ public class CreditCardRecord {
         createdAt = LocalDateTime.now();
     }
 
-    // Getters & Setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
@@ -57,6 +49,12 @@ public class CreditCardRecord {
 
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
+
+    public String getCategory() { return category; }
+    public void setCategory(String category) { this.category = category; }
+
+    public Integer getRewardPoints() { return rewardPoints; }
+    public void setRewardPoints(Integer rewardPoints) { this.rewardPoints = rewardPoints; }
 
     public LocalDateTime getCreatedAt() { return createdAt; }
 }
