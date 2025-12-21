@@ -22,34 +22,35 @@ public class RewardRuleServiceImpl implements RewardRuleService {
     }
 
     @Override
-    public RewardRule getRule(Long id) {
-        return rewardRuleRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Rule not found"));
-    }
-
-    @Override
     public List<RewardRule> getAllRules() {
         return rewardRuleRepository.findAll();
     }
 
     @Override
-    public RewardRule updateRule(Long id, RewardRule updated) {
+    public RewardRule getRule(Long id) {
+        return rewardRuleRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Reward Rule not found with ID: " + id));
+    }
 
-        RewardRule existing = getRule(id);
+    @Override
+    public RewardRule updateRule(Long id, RewardRule updatedRule) {
+        RewardRule existing = rewardRuleRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Reward Rule not found with ID: " + id));
 
-        existing.setRuleName(updated.getRuleName());
-        existing.setRewardPoints(updated.getRewardPoints());
-        existing.setCategory(updated.getCategory());
-        existing.setMerchant(updated.getMerchant());
-        existing.setBonusPoints(updated.getBonusPoints());
-        existing.setActive(updated.isActive());
+        existing.setRuleName(updatedRule.getRuleName());
+        existing.setRewardPoints(updatedRule.getRewardPoints());
+        existing.setCategory(updatedRule.getCategory());
+        existing.setMerchant(updatedRule.getMerchant());
+        existing.setBonusPoints(updatedRule.getBonusPoints());
+        existing.setActive(updatedRule.isActive());
 
         return rewardRuleRepository.save(existing);
     }
 
     @Override
     public void deleteRule(Long id) {
-        RewardRule rule = getRule(id);
+        RewardRule rule = rewardRuleRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Reward Rule not found with ID: " + id));
         rewardRuleRepository.delete(rule);
     }
 }

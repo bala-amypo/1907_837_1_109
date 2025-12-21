@@ -7,11 +7,11 @@ public interface RewardRuleService {
 
     RewardRule createRule(RewardRule rule);
 
-    RewardRule getRule(Long id);
-
     List<RewardRule> getAllRules();
 
-    RewardRule updateRule(Long id, RewardRule updated);
+    RewardRule getRule(Long id);
+
+    RewardRule updateRule(Long id, RewardRule updatedRule);
 
     void deleteRule(Long id);
 }
