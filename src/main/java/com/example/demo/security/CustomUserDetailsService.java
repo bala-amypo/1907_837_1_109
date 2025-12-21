@@ -2,25 +2,20 @@ package com.example.demo.security;
 
 import com.example.demo.entity.UserProfile;
 import com.example.demo.repository.UserProfileRepository;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.userdetails.*;
 import org.springframework.stereotype.Service;
 
 @Service
 public class CustomUserDetailsService implements UserDetailsService {
 
-    private final UserProfileRepository userRepository;
-
-    public CustomUserDetailsService(UserProfileRepository userRepository) {
-        this.userRepository = userRepository;
-    }
+    @Autowired
+    private UserProfileRepository repo;
 
     @Override
-    public UserDetails loadUserByUsername(String email)
-            throws UsernameNotFoundException {
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
 
-        UserProfile user = userRepository.findByEmail(email)
+        UserProfile user = repo.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found: " + email));
 
         return new CustomUserDetails(user);
