@@ -12,9 +12,7 @@ public class RecommendationRecord {
     private Long id;
 
     private Long userId;
-
     private Long purchaseIntentId;
-
     private Long recommendedCardId;
 
     private Double expectedRewardValue;
@@ -24,63 +22,25 @@ public class RecommendationRecord {
 
     private LocalDateTime recommendedAt;
 
-    public RecommendationRecord() {}
+    // Getters / Setters
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
 
-    // ----- GETTERS & SETTERS -----
+    public Long getUserId() { return userId; }
+    public void setUserId(Long userId) { this.userId = userId; }
 
-    public Long getId() {
-        return id;
-    }
+    public Long getPurchaseIntentId() { return purchaseIntentId; }
+    public void setPurchaseIntentId(Long purchaseIntentId) { this.purchaseIntentId = purchaseIntentId; }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+    public Long getRecommendedCardId() { return recommendedCardId; }
+    public void setRecommendedCardId(Long recommendedCardId) { this.recommendedCardId = recommendedCardId; }
 
-    public Long getUserId() {
-        return userId;
-    }
+    public Double getExpectedRewardValue() { return expectedRewardValue; }
+    public void setExpectedRewardValue(Double expectedRewardValue) { this.expectedRewardValue = expectedRewardValue; }
 
-    public void setUserId(Long userId) {
-        this.userId = userId;
-    }
+    public String getCalculationDetailsJson() { return calculationDetailsJson; }
+    public void setCalculationDetailsJson(String calculationDetailsJson) { this.calculationDetailsJson = calculationDetailsJson; }
 
-    public Long getPurchaseIntentId() {
-        return purchaseIntentId;
-    }
-
-    public void setPurchaseIntentId(Long purchaseIntentId) {
-        this.purchaseIntentId = purchaseIntentId;
-    }
-
-    public Long getRecommendedCardId() {
-        return recommendedCardId;
-    }
-
-    public void setRecommendedCardId(Long recommendedCardId) {
-        this.recommendedCardId = recommendedCardId;
-    }
-
-    public Double getExpectedRewardValue() {
-        return expectedRewardValue;
-    }
-
-    public void setExpectedRewardValue(Double expectedRewardValue) {
-        this.expectedRewardValue = expectedRewardValue;
-    }
-
-    public String getCalculationDetailsJson() {
-        return calculationDetailsJson;
-    }
-
-    public void setCalculationDetailsJson(String calculationDetailsJson) {
-        this.calculationDetailsJson = calculationDetailsJson;
-    }
-
-    public LocalDateTime getRecommendedAt() {
-        return recommendedAt;
-    }
-
-    public void setRecommendedAt(LocalDateTime recommendedAt) {
-        this.recommendedAt = recommendedAt;
-    }
+    public LocalDateTime getRecommendedAt() { return recommendedAt; }
+    public void setRecommendedAt(LocalDateTime recommendedAt) { this.recommendedAt = recommendedAt; }
 }
