@@ -6,6 +6,7 @@ import com.example.demo.entity.RewardRule;
 import com.example.demo.entity.RecommendationRecord;
 
 import com.example.demo.exception.ResourceNotFoundException;
+
 import com.example.demo.repository.PurchaseIntentRecordRepository;
 import com.example.demo.repository.UserProfileRepository;
 import com.example.demo.repository.CreditCardRecordRepository;
@@ -42,10 +43,13 @@ public class RecommendationEngineServiceImpl implements RecommendationEngineServ
         this.recRepo = recRepo;
     }
 
+    /**
+     * Generate recommendation based on purchase intent.
+     */
     @Override
-    public RecommendationRecord generateRecommendation(Long intentId) {
+    public List<RecommendationRecord> generateRecommendation(Long intentId) {
 
-        // 1️⃣ Fetch Intent
+        // 1️⃣ Fetch intent
         PurchaseIntentRecord intent = intentRepo.findById(intentId)
                 .orElseThrow(() -> new ResourceNotFoundException("Intent not found"));
 
@@ -53,7 +57,7 @@ public class RecommendationEngineServiceImpl implements RecommendationEngineServ
         String category = intent.getCategory();
         double amount = intent.getAmount();
 
-        // 2️⃣ Fetch user cards
+        // 2️⃣ Fetch user's active cards
         List<CreditCardRecord> activeCards = cardRepo.findActiveCardsByUser(userId);
 
         if (activeCards.isEmpty()) {
@@ -64,19 +68,19 @@ public class RecommendationEngineServiceImpl implements RecommendationEngineServ
         Long bestCardId = null;
         String calcJson = "";
 
-        // 3️⃣ For each card → fetch active rules for this card + category
+        // 3️⃣ Evaluate each card based on reward rules
         for (CreditCardRecord card : activeCards) {
 
-            List<RewardRule> rules =
-                    ruleRepo.findActiveRulesForCardCategory(card.getId(), category);
+            List<RewardRule> rules = ruleRepo.findActiveRulesForCardCategory(card.getId(), category);
 
             for (RewardRule rule : rules) {
 
-                double reward = amount * rule.getMultiplier();
+                double reward = amount * rule.getMultiplier(); // multiplier added in entity
 
                 if (reward > bestReward) {
                     bestReward = reward;
                     bestCardId = card.getId();
+
                     calcJson = "{ \"cardId\": " + card.getId() +
                             ", \"ruleId\": " + rule.getId() +
                             ", \"reward\": " + reward +
@@ -86,10 +90,10 @@ public class RecommendationEngineServiceImpl implements RecommendationEngineServ
         }
 
         if (bestCardId == null) {
-            throw new ResourceNotFoundException("No reward rules match this category");
+            throw new ResourceNotFoundException("No valid reward rules found for this category");
         }
 
-        // 4️⃣ Save Recommendation
+        // 4️⃣ Save recommendation result
         RecommendationRecord rec = new RecommendationRecord();
         rec.setUserId(userId);
         rec.setPurchaseIntentId(intentId);
@@ -98,9 +102,11 @@ public class RecommendationEngineServiceImpl implements RecommendationEngineServ
         rec.setCalculationDetailsJson(calcJson);
         rec.setRecommendedAt(LocalDateTime.now());
 
-        return recRepo.save(rec);
-    }
+        recRepo.save(rec);
 
+        // Return as list (because interface expects List)
+        return List.of(rec);
+    }
 
     @Override
     public RecommendationRecord getRecommendationById(Long id) {
@@ -118,4 +124,3 @@ public class RecommendationEngineServiceImpl implements RecommendationEngineServ
         return recRepo.findAll();
     }
 }
- 
