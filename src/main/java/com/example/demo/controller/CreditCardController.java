@@ -1,6 +1,6 @@
 package com.example.demo.controller;
 
-import com.example.demo.entity.CreditCardRecord;
+import com.example.demo.entity.CCreditCardRecord;
 import com.example.demo.service.CreditCardService;
 import org.springframework.web.bind.annotation.*;
 
@@ -10,34 +10,34 @@ import java.util.List;
 @RequestMapping("/api/cards")
 public class CreditCardController {
 
-    private final CreditCardService cardService;
+    private final CreditCardService service;
 
-    public CreditCardController(CreditCardService cardService) {
-        this.cardService = cardService;
+    public CreditCardController(CreditCardService service) {
+        this.service = service;
     }
 
     @PostMapping
     public CreditCardRecord create(@RequestBody CreditCardRecord card) {
-        return cardService.create(card);
-    }
-
-    @GetMapping("/{id}")
-    public CreditCardRecord getById(@PathVariable Long id) {
-        return cardService.getById(id);
-    }
-
-    @GetMapping
-    public List<CreditCardRecord> getAll() {
-        return cardService.getAll();
+        return service.addCard(card);
     }
 
     @PutMapping("/{id}")
     public CreditCardRecord update(@PathVariable Long id, @RequestBody CreditCardRecord card) {
-        return cardService.update(id, card);
+        return service.updateCard(id, card);
     }
 
-    @DeleteMapping("/{id}")
-    public void delete(@PathVariable Long id) {
-        cardService.delete(id);
+    @GetMapping("/user/{userId}")
+    public List<CreditCardRecord> getByUser(@PathVariable Long userId) {
+        return service.getCardsByUser(userId);
+    }
+
+    @GetMapping("/{id}")
+    public CreditCardRecord getById(@PathVariable Long id) {
+        return service.getCardById(id);
+    }
+
+    @GetMapping
+    public List<CreditCardRecord> getAll() {
+        return service.getAllCards();
     }
 }
