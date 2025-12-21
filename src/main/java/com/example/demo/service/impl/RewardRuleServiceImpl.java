@@ -38,8 +38,11 @@ public class RewardRuleServiceImpl implements RewardRuleService {
         RewardRule r = getById(id);
 
         r.setCategory(updated.getCategory());
-        r.setMerchant(updated.getMerchant());
-        r.setBonusPoints(updated.getBonusPoints());
+        r.setRuleName(updated.getRuleName());
+        r.setRewardPoints(updated.getRewardPoints());
+        r.setDescription(updated.getDescription());
+        r.setActive(updated.isActive());
+        r.setCardId(updated.getCardId());
 
         return repo.save(r);
     }
