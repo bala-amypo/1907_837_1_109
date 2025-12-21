@@ -5,6 +5,7 @@ import com.example.demo.repository.UserProfileRepository;
 import com.example.demo.service.UserProfileService;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
+
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -24,8 +25,7 @@ public class UserProfileServiceImpl implements UserProfileService {
     @Override
     public UserProfile register(UserProfile user) {
 
-        // 🔥 ENCODE PASSWORD BEFORE SAVE
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        user.setPassword(passwordEncoder.encode(user.getPassword())); // ENCODE HERE
 
         return userRepo.save(user);
     }
@@ -54,11 +54,6 @@ public class UserProfileServiceImpl implements UserProfileService {
         existing.setCountry(updatedUser.getCountry());
         existing.setMonthlyIncome(updatedUser.getMonthlyIncome());
 
-        // 🔥 If password changed → encode again
-        if (updatedUser.getPassword() != null && !updatedUser.getPassword().isBlank()) {
-            existing.setPassword(passwordEncoder.encode(updatedUser.getPassword()));
-        }
-
         return userRepo.save(existing);
     }
 
@@ -70,7 +65,6 @@ public class UserProfileServiceImpl implements UserProfileService {
     @Override
     public UserProfile findByEmail(String email) {
         return userRepo.findByEmail(email)
-                .orElseThrow(() ->
-                        new RuntimeException("User not found with email: " + email));
+                .orElseThrow(() -> new RuntimeException("User not found: " + email));
     }
 }
