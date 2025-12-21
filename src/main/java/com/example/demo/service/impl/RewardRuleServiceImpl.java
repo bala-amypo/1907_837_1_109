@@ -1,54 +1,22 @@
-package com.example.demo.service.impl;
-
-import com.example.demo.entity.RewardRule;
-import com.example.demo.exception.ResourceNotFoundException;
-import com.example.demo.repository.RewardRuleRepository;
-import com.example.demo.service.RewardRuleService;
-import org.springframework.stereotype.Service;
-
-import java.util.List;
-
 @Service
 public class RewardRuleServiceImpl implements RewardRuleService {
 
-    private final RewardRuleRepository repo;
-
-    public RewardRuleServiceImpl(RewardRuleRepository repo) {
-        this.repo = repo;
-    }
+    @Autowired
+    private RewardRuleRepository rewardRuleRepository;
 
     @Override
-    public RewardRule create(RewardRule rule) {
-        return repo.save(rule);
-    }
+    public RewardRule updateRule(Long id, RewardRule updated) {
 
-    @Override
-    public RewardRule getById(Long id) {
-        return repo.findById(id)
+        RewardRule existing = rewardRuleRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Rule not found"));
-    }
 
-    @Override
-    public List<RewardRule> getAll() {
-        return repo.findAll();
-    }
+        existing.setRuleName(updated.getRuleName());
+        existing.setRewardPoints(updated.getRewardPoints());
+        existing.setCategory(updated.getCategory());
+        existing.setMerchant(updated.getMerchant());
+        existing.setBonusPoints(updated.getBonusPoints());
+        existing.setActive(updated.isActive());
 
-    @Override
-    public RewardRule update(Long id, RewardRule updated) {
-        RewardRule r = getById(id);
-
-        r.setCategory(updated.getCategory());
-        r.setRuleName(updated.getRuleName());
-        r.setRewardPoints(updated.getRewardPoints());
-        r.setDescription(updated.getDescription());
-        r.setActive(updated.isActive());
-        r.setCardId(updated.getCardId());
-
-        return repo.save(r);
-    }
-
-    @Override
-    public void delete(Long id) {
-        repo.deleteById(id);
+        return rewardRuleRepository.save(existing);
     }
 }
