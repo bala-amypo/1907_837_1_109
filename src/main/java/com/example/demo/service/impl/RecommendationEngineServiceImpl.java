@@ -69,18 +69,26 @@ import com.example.demo.entity.*;
 import com.example.demo.exception.*;
 import com.example.demo.repository.*;
 import com.example.demo.service.RecommendationEngineService;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import java.util.List;
 
 @Service
-@RequiredArgsConstructor
 public class RecommendationEngineServiceImpl implements RecommendationEngineService {
     private final PurchaseIntentRecordRepository purchaseIntentRepository;
-    private final UserProfileRepository userProfileRepository; // Added this
+    private final UserProfileRepository userProfileRepository;
     private final CreditCardRecordRepository creditCardRepository;
     private final RewardRuleRepository rewardRuleRepository;
     private final RecommendationRecordRepository recommendationRecordRepository;
+
+    public RecommendationEngineServiceImpl(PurchaseIntentRecordRepository pir, UserProfileRepository upr, 
+                                          CreditCardRecordRepository ccr, RewardRuleRepository rrr, 
+                                          RecommendationRecordRepository rrecr) {
+        this.purchaseIntentRepository = pir;
+        this.userProfileRepository = upr;
+        this.creditCardRepository = ccr;
+        this.rewardRuleRepository = rrr;
+        this.recommendationRecordRepository = rrecr;
+    }
 
     @Override
     public RecommendationRecord generateRecommendation(Long intentId) {
@@ -91,7 +99,7 @@ public class RecommendationEngineServiceImpl implements RecommendationEngineServ
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         List<CreditCardRecord> cards = creditCardRepository.findActiveCardsByUser(intent.getUserId());
-        if (cards.isEmpty()) throw new BadRequestException("No active cards found");
+        if (cards == null || cards.isEmpty()) throw new BadRequestException("No cards found");
 
         CreditCardRecord bestCard = null;
         double maxReward = -1.0;
@@ -112,17 +120,15 @@ public class RecommendationEngineServiceImpl implements RecommendationEngineServ
         rec.setPurchaseIntentId(intentId);
         rec.setRecommendedCardId(bestCard != null ? bestCard.getId() : null);
         rec.setExpectedRewardValue(maxReward > 0 ? maxReward : 0.0);
-        rec.setCalculationDetailsJson("{\"category\":\"" + intent.getCategory() + "\"}");
+        rec.setCalculationDetailsJson("{\"cat\":\"" + intent.getCategory() + "\"}");
         return recommendationRecordRepository.save(rec);
     }
 
-    @Override
-    public List<RecommendationRecord> getRecommendationsByUser(Long userId) {
+    @Override public List<RecommendationRecord> getRecommendationsByUser(Long userId) {
         return recommendationRecordRepository.findByUserId(userId);
     }
 
-    @Override
-    public List<RecommendationRecord> getAllRecommendations() {
+    @Override public List<RecommendationRecord> getAllRecommendations() {
         return recommendationRecordRepository.findAll();
     }
 }
