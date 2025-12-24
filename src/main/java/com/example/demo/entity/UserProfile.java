@@ -114,4 +114,4 @@ public class UserProfile {
         this.createdAt = LocalDateTime.now();
         if (this.role == null) this.role = "USER";
     }
-}
+}   
