@@ -1,44 +1,44 @@
-package com.example.demo.controller;
+// package com.example.demo.controller;
 
-import com.example.demo.entity.UserProfile;
-import com.example.demo.service.UserProfileService;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+// import com.example.demo.entity.UserProfile;
+// import com.example.demo.service.UserProfileService;
+// import org.springframework.http.ResponseEntity;
+// import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+// import java.util.List;
 
-@RestController
-@RequestMapping("/api/users")
-public class UserProfileController {
+// @RestController
+// @RequestMapping("/api/users")
+// public class UserProfileController {
     
-    private final UserProfileService userProfileService;
+//     private final UserProfileService userProfileService;
 
-    public UserProfileController(UserProfileService userProfileService) {
-        this.userProfileService = userProfileService;
-    }
+//     public UserProfileController(UserProfileService userProfileService) {
+//         this.userProfileService = userProfileService;
+//     }
 
-    @PostMapping
-    public ResponseEntity<UserProfile> createUser(@RequestBody UserProfile user) {
-        return ResponseEntity.ok(userProfileService.createUser(user));
-    }
+//     @PostMapping
+//     public ResponseEntity<UserProfile> createUser(@RequestBody UserProfile user) {
+//         return ResponseEntity.ok(userProfileService.createUser(user));
+//     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<UserProfile> getUserById(@PathVariable Long id) {
-        return ResponseEntity.ok(userProfileService.getUserById(id));
-    }
+//     @GetMapping("/{id}")
+//     public ResponseEntity<UserProfile> getUserById(@PathVariable Long id) {
+//         return ResponseEntity.ok(userProfileService.getUserById(id));
+//     }
 
-    @GetMapping
-    public ResponseEntity<List<UserProfile>> getAllUsers() {
-        return ResponseEntity.ok(userProfileService.getAllUsers());
-    }
+//     @GetMapping
+//     public ResponseEntity<List<UserProfile>> getAllUsers() {
+//         return ResponseEntity.ok(userProfileService.getAllUsers());
+//     }
 
-    @PutMapping("/{id}/status")
-    public ResponseEntity<UserProfile> updateUserStatus(@PathVariable Long id, @RequestParam boolean active) {
-        return ResponseEntity.ok(userProfileService.updateUserStatus(id, active));
-    }
+//     @PutMapping("/{id}/status")
+//     public ResponseEntity<UserProfile> updateUserStatus(@PathVariable Long id, @RequestParam boolean active) {
+//         return ResponseEntity.ok(userProfileService.updateUserStatus(id, active));
+//     }
 
-    @GetMapping("/lookup/{userId}")
-    public ResponseEntity<UserProfile> findByUserId(@PathVariable String userId) {
-        return ResponseEntity.ok(userProfileService.findByUserId(userId));
-    }
-}
+//     @GetMapping("/lookup/{userId}")
+//     public ResponseEntity<UserProfile> findByUserId(@PathVariable String userId) {
+//         return ResponseEntity.ok(userProfileService.findByUserId(userId));
+//     }
+// }
