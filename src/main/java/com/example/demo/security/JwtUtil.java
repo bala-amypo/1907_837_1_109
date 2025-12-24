@@ -1,64 +1,29 @@
-// package com.example.demo.security;
-
-// import io.jsonwebtoken.Jwts;
-// import io.jsonwebtoken.SignatureAlgorithm;
-// import io.jsonwebtoken.security.Keys;
-// import org.springframework.stereotype.Component;
-
-// import javax.crypto.SecretKey;
-// import java.util.Date;
-
-// @Component
-// public class JwtUtil {
-
-//     private final SecretKey secretKey = Keys.secretKeyFor(SignatureAlgorithm.HS256);
-//     private final long EXPIRATION = 86400000; // 1 day
-
-//     public String generateToken(String email) {
-//         return Jwts.builder()
-//                 .setSubject(email)
-//                 .setIssuedAt(new Date())
-//                 .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION))
-//                 .signWith(secretKey)
-//                 .compact();
-//     }
-
-//     public String extractUsername(String token) {
-//         return Jwts.parserBuilder()
-//                 .setSigningKey(secretKey)
-//                 .build()
-//                 .parseClaimsJws(token)
-//                 .getBody()
-//                 .getSubject();
-//     }
-
-//     public boolean validateToken(String token, String email) {
-//         String extracted = extractUsername(token);
-//         return extracted.equals(email);
-//     }
-// }
-
 package com.example.demo.security;
 
-import io.jsonwebtoken.*;
-import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import javax.crypto.SecretKey;
-import java.util.Date;
+
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Base64;
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
 
 @Component
 public class JwtUtil {
     
-    private final SecretKey key;
+    private final String secret;
     private final long expirationMs;
 
     public JwtUtil(@Value("${app.jwt.secret}") String secret, 
                    @Value("${app.jwt.expiration-ms}") Long expirationMs) {
-        this.key = Keys.hmacShaKeyFor(secret.getBytes());
+        this.secret = secret;
+        this.expirationMs = expirationMs;
+    }
+
+    public JwtUtil(byte[] secret, Long expirationMs) {
+        this.secret = new String(secret);
         this.expirationMs = expirationMs;
     }
 
@@ -68,41 +33,104 @@ public class JwtUtil {
         claims.put("email", email);
         claims.put("role", role);
         
-        return Jwts.builder()
-            .setClaims(claims)
-            .setSubject(email)
-            .setIssuedAt(new Date())
-            .setExpiration(new Date(System.currentTimeMillis() + expirationMs))
-            .signWith(key, SignatureAlgorithm.HS256)
-            .compact();
+        return createToken(claims, email);
+    }
+
+    private String createToken(Map<String, Object> claims, String subject) {
+        String header = "{\"alg\":\"HS256\",\"typ\":\"JWT\"}";
+        String payload = createPayload(claims, subject);
+        
+        String encodedHeader = Base64.getUrlEncoder().withoutPadding().encodeToString(header.getBytes());
+        String encodedPayload = Base64.getUrlEncoder().withoutPadding().encodeToString(payload.getBytes());
+        
+        String signature = createSignature(encodedHeader + "." + encodedPayload);
+        
+        return encodedHeader + "." + encodedPayload + "." + signature;
+    }
+
+    private String createPayload(Map<String, Object> claims, String subject) {
+        long now = System.currentTimeMillis();
+        long exp = now + expirationMs;
+        
+        StringBuilder payload = new StringBuilder();
+        payload.append("{");
+        payload.append("\"sub\":\"").append(subject).append("\",");
+        payload.append("\"iat\":").append(now / 1000).append(",");
+        payload.append("\"exp\":").append(exp / 1000);
+        
+        for (Map.Entry<String, Object> entry : claims.entrySet()) {
+            payload.append(",\"").append(entry.getKey()).append("\":");
+            if (entry.getValue() instanceof String) {
+                payload.append("\"").append(entry.getValue()).append("\"");
+            } else {
+                payload.append(entry.getValue());
+            }
+        }
+        
+        payload.append("}");
+        return payload.toString();
+    }
+
+    private String createSignature(String data) {
+        try {
+            Mac mac = Mac.getInstance("HmacSHA256");
+            SecretKeySpec secretKeySpec = new SecretKeySpec(secret.getBytes(), "HmacSHA256");
+            mac.init(secretKeySpec);
+            byte[] hash = mac.doFinal(data.getBytes());
+            return Base64.getUrlEncoder().withoutPadding().encodeToString(hash);
+        } catch (Exception e) {
+            throw new RuntimeException("Error creating signature", e);
+        }
     }
 
     public String extractEmail(String token) {
-        return parseClaims(token).getSubject();
+        return extractClaim(token, "sub");
     }
 
     public String extractRole(String token) {
-        return parseClaims(token).get("role", String.class);
+        return extractClaim(token, "role");
     }
 
     public Long extractUserId(String token) {
-        return parseClaims(token).get("userId", Long.class);
+        String userIdStr = extractClaim(token, "userId");
+        return userIdStr != null ? Long.valueOf(userIdStr) : null;
     }
 
     public boolean validateToken(String token) {
         try {
-            parseClaims(token);
-            return true;
+            String[] parts = token.split("\\.");
+            if (parts.length != 3) return false;
+            
+            String signature = createSignature(parts[0] + "." + parts[1]);
+            return signature.equals(parts[2]);
         } catch (Exception e) {
             return false;
         }
     }
 
-    private Claims parseClaims(String token) {
-        return Jwts.parserBuilder()
-            .setSigningKey(key)
-            .build()
-            .parseClaimsJws(token)
-            .getBody();
+    private String extractClaim(String token, String claimName) {
+        try {
+            String[] parts = token.split("\\.");
+            if (parts.length != 3) return null;
+            
+            String payload = new String(Base64.getUrlDecoder().decode(parts[1]));
+            
+            String searchKey = "\"" + claimName + "\":";
+            int startIndex = payload.indexOf(searchKey);
+            if (startIndex == -1) return null;
+            
+            startIndex += searchKey.length();
+            if (payload.charAt(startIndex) == '"') {
+                startIndex++;
+                int endIndex = payload.indexOf('"', startIndex);
+                return payload.substring(startIndex, endIndex);
+            } else {
+                int endIndex = payload.indexOf(',', startIndex);
+                if (endIndex == -1) endIndex = payload.indexOf('}', startIndex);
+                return payload.substring(startIndex, endIndex);
+            }
+        } catch (Exception e) {
+            return null;
+        }
     }
 }
