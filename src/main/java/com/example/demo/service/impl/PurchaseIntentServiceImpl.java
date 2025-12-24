@@ -42,3 +42,36 @@
 //         return purchaseIntentRepository.findAll();
 //     }
 // }
+
+package com.example.demo.service.impl;
+
+import com.example.demo.entity.PurchaseIntentRecord;
+import com.example.demo.repository.PurchaseIntentRecordRepository;
+import com.example.demo.service.PurchaseIntentService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import java.util.List;
+
+@Service
+@RequiredArgsConstructor
+public class PurchaseIntentServiceImpl implements PurchaseIntentService {
+    private final PurchaseIntentRecordRepository purchaseIntentRepository;
+
+    @Override
+    public PurchaseIntentRecord createIntent(PurchaseIntentRecord intent) {
+        if (intent.getAmount() == null || intent.getAmount() <= 0) {
+            throw new com.example.demo.exception.BadRequestException("Amount must be positive");
+        }
+        return purchaseIntentRepository.save(intent);
+    }
+
+    @Override
+    public List<PurchaseIntentRecord> getIntentsByUser(Long userId) {
+        return purchaseIntentRepository.findByUserId(userId);
+    }
+
+    @Override
+    public List<PurchaseIntentRecord> getAllIntents() {
+        return purchaseIntentRepository.findAll();
+    }
+}
