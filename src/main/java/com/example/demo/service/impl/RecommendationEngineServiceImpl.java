@@ -5,52 +5,32 @@ import com.example.demo.exception.BadRequestException;
 import com.example.demo.exception.ResourceNotFoundException;
 import com.example.demo.repository.*;
 import com.example.demo.service.RecommendationEngineService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class RecommendationEngineServiceImpl implements RecommendationEngineService {
-    
     private final PurchaseIntentRecordRepository purchaseIntentRepository;
     private final UserProfileRepository userProfileRepository;
     private final CreditCardRecordRepository creditCardRepository;
     private final RewardRuleRepository rewardRuleRepository;
-    private final RecommendationRecordRepository recommendationRepository;
-
-    public RecommendationEngineServiceImpl(
-            PurchaseIntentRecordRepository purchaseIntentRepository,
-            UserProfileRepository userProfileRepository,
-            CreditCardRecordRepository creditCardRepository,
-            RewardRuleRepository rewardRuleRepository,
-            RecommendationRecordRepository recommendationRepository) {
-        this.purchaseIntentRepository = purchaseIntentRepository;
-        this.userProfileRepository = userProfileRepository;
-        this.creditCardRepository = creditCardRepository;
-        this.rewardRuleRepository = rewardRuleRepository;
-        this.recommendationRepository = recommendationRepository;
-    }
+    private final RecommendationRecordRepository recommendationRecordRepository;
 
     @Override
     public RecommendationRecord generateRecommendation(Long intentId) {
         PurchaseIntentRecord intent = purchaseIntentRepository.findById(intentId)
-            .orElseThrow(() -> new ResourceNotFoundException("Purchase intent not found with id: " + intentId));
-        
-        UserProfile user = userProfileRepository.findById(intent.getUserId())
-            .orElseThrow(() -> new ResourceNotFoundException("User not found"));
-        
-        if (!user.getActive()) {
-            throw new BadRequestException("User account is not active");
-        }
+                .orElseThrow(() -> new ResourceNotFoundException("Intent not found"));
         
         List<CreditCardRecord> activeCards = creditCardRepository.findActiveCardsByUser(intent.getUserId());
         if (activeCards.isEmpty()) {
-            throw new BadRequestException("No active cards available for user");
+            throw new BadRequestException("No active cards found for user");
         }
-        
+
         CreditCardRecord bestCard = null;
-        double maxReward = 0.0;
-        
+        double maxReward = -1.0;
+
         for (CreditCardRecord card : activeCards) {
             List<RewardRule> rules = rewardRuleRepository.findActiveRulesForCardCategory(card.getId(), intent.getCategory());
             for (RewardRule rule : rules) {
@@ -61,40 +41,25 @@ public class RecommendationEngineServiceImpl implements RecommendationEngineServ
                 }
             }
         }
-        
-        if (bestCard == null) {
-            throw new BadRequestException("No applicable reward rules found");
-        }
-        
-        String calculationDetails = String.format(
-            "{\"cardId\":%d,\"amount\":%.2f,\"multiplier\":%.2f,\"reward\":%.2f}",
-            bestCard.getId(), intent.getAmount(), maxReward / intent.getAmount(), maxReward
-        );
-        
-        RecommendationRecord recommendation = new RecommendationRecord(
-            intent.getUserId(),
-            intentId,
-            bestCard.getId(),
-            maxReward,
-            calculationDetails
-        );
-        
-        return recommendationRepository.save(recommendation);
-    }
 
-    @Override
-    public RecommendationRecord getRecommendationById(Long id) {
-        return recommendationRepository.findById(id)
-            .orElseThrow(() -> new ResourceNotFoundException("Recommendation not found with id: " + id));
+        if (bestCard == null) throw new BadRequestException("No matching reward rules");
+
+        RecommendationRecord rec = new RecommendationRecord();
+        rec.setUserId(intent.getUserId());
+        rec.setPurchaseIntentId(intentId);
+        rec.setRecommendedCardId(bestCard.getId());
+        rec.setExpectedRewardValue(maxReward);
+        rec.setCalculationDetailsJson("{\"logic\": \"max_multiplier\"}");
+        return recommendationRecordRepository.save(rec);
     }
 
     @Override
     public List<RecommendationRecord> getRecommendationsByUser(Long userId) {
-        return recommendationRepository.findByUserId(userId);
+        return recommendationRecordRepository.findByUserId(userId);
     }
 
     @Override
     public List<RecommendationRecord> getAllRecommendations() {
-        return recommendationRepository.findAll();
+        return recommendationRecordRepository.findAll();
     }
 }
