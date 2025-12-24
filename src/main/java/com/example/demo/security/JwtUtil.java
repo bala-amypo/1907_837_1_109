@@ -141,13 +141,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import java.util.Base64;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
+import java.util.Base64;
+import java.util.HashMap;
+import java.util.Map;
 
 @Component
 public class JwtUtil {
@@ -155,7 +153,6 @@ public class JwtUtil {
     private final String secret;
     private final long expirationMs;
 
-    // Constructor used by Spring
     @Autowired
     public JwtUtil(
             @Value("${app.jwt.secret}") String secret,
@@ -164,66 +161,98 @@ public class JwtUtil {
         this.expirationMs = expirationMs;
     }
 
-    // -----------------------------------------
-    // Generate Token
-    // -----------------------------------------
+    // ----------------------------------------------------------------
+    // Generate Token (used by your AuthController)
+    // ----------------------------------------------------------------
+    public String generateToken(Long id, String email, String role) {
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("id", id);
+        claims.put("email", email);
+        claims.put("role", role);
+        claims.put("iat", System.currentTimeMillis());  // issued at
+        claims.put("exp", System.currentTimeMillis() + expirationMs); // expiration time
+
+        return createToken(claims);
+    }
+
+    // Optional simple version (if needed)
     public String generateToken(String username) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("sub", username);
         claims.put("iat", System.currentTimeMillis());
         claims.put("exp", System.currentTimeMillis() + expirationMs);
-
         return createToken(claims);
     }
 
+    // ----------------------------------------------------------------
+    // Create JWT manually
+    // ----------------------------------------------------------------
     private String createToken(Map<String, Object> claims) {
         try {
+            // Header
+            String headerJson = "{\"alg\":\"HS256\",\"typ\":\"JWT\"}";
             String header = Base64.getUrlEncoder().withoutPadding()
-                    .encodeToString("{\"alg\":\"HS256\",\"typ\":\"JWT\"}".getBytes());
+                    .encodeToString(headerJson.getBytes());
 
+            // Payload
             String payload = Base64.getUrlEncoder().withoutPadding()
                     .encodeToString(claims.toString().getBytes());
 
+            // Signature = HMACSHA256(header.payload)
             String signature = hmacSha256(header + "." + payload, secret);
 
             return header + "." + payload + "." + signature;
+
         } catch (Exception e) {
-            throw new RuntimeException("Error creating JWT", e);
+            throw new RuntimeException("Error while creating JWT", e);
         }
     }
 
-    // -----------------------------------------
-    // Validate Token
-    // -----------------------------------------
+    // ----------------------------------------------------------------
+    // Validate token
+    // ----------------------------------------------------------------
     public boolean validateToken(String token) {
         try {
             String[] parts = token.split("\\.");
             if (parts.length != 3) return false;
 
-            String signatureCheck = hmacSha256(parts[0] + "." + parts[1], secret);
+            String header = parts[0];
+            String payload = parts[1];
+            String signature = parts[2];
 
-            return signatureCheck.equals(parts[2]);
+            String expectedSignature = hmacSha256(header + "." + payload, secret);
+
+            return expectedSignature.equals(signature);
         } catch (Exception e) {
             return false;
         }
     }
 
-    // -----------------------------------------
-    // Extract username from token
-    // -----------------------------------------
-    public String extractUsername(String token) {
-        String[] parts = token.split("\\.");
-        String payloadJson = new String(Base64.getUrlDecoder().decode(parts[1]));
-        return payloadJson.split("sub=")[1].split(",")[0];
+    // ----------------------------------------------------------------
+    // Extract fields from token
+    // ----------------------------------------------------------------
+    public String extractEmail(String token) {
+        String payload = new String(Base64.getUrlDecoder().decode(token.split("\\.")[1]));
+        return payload.split("email=")[1].split(",")[0];
     }
 
-    // -----------------------------------------
+    public Long extractId(String token) {
+        String payload = new String(Base64.getUrlDecoder().decode(token.split("\\.")[1]));
+        return Long.valueOf(payload.split("id=")[1].split(",")[0]);
+    }
+
+    public String extractRole(String token) {
+        String payload = new String(Base64.getUrlDecoder().decode(token.split("\\.")[1]));
+        return payload.split("role=")[1].split(",")[0];
+    }
+
+    // ----------------------------------------------------------------
     // HMAC SHA256
-    // -----------------------------------------
+    // ----------------------------------------------------------------
     private String hmacSha256(String data, String secretKey) throws Exception {
         Mac sha256_HMAC = Mac.getInstance("HmacSHA256");
-        SecretKeySpec secret_key = new SecretKeySpec(secretKey.getBytes(), "HmacSHA256");
-        sha256_HMAC.init(secret_key);
+        SecretKeySpec secretKeySpec = new SecretKeySpec(secretKey.getBytes(), "HmacSHA256");
+        sha256_HMAC.init(secretKeySpec);
 
         return Base64.getUrlEncoder().withoutPadding()
                 .encodeToString(sha256_HMAC.doFinal(data.getBytes()));
