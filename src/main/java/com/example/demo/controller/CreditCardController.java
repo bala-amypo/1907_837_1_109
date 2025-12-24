@@ -41,3 +41,4 @@ public class CreditCardController {
     public ResponseEntity<List<CreditCardRecord>> getAllCards() {
         return ResponseEntity.ok(creditCardService.getAllCards());
     }
+}
