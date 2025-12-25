@@ -90,7 +90,6 @@
 
 
 package com.example.demo.entity;
-
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
@@ -112,7 +111,6 @@ public class UserProfile {
         if (this.role == null) this.role = "USER";
     }
 
-    // GETTERS AND SETTERS
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
     public String getUserId() { return userId; }
