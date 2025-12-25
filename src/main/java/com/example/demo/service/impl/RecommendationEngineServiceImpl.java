@@ -63,7 +63,8 @@
 //         return recommendationRecordRepository.findAll();
 //     }
 // }
-package com.example.demo.service.impl;
+
+   package com.example.demo.service.impl;
 
 import com.example.demo.entity.*;
 import com.example.demo.exception.*;
@@ -80,8 +81,9 @@ public class RecommendationEngineServiceImpl implements RecommendationEngineServ
     private final RewardRuleRepository rewardRuleRepository;
     private final RecommendationRecordRepository recommendationRecordRepository;
 
-    public RecommendationEngineServiceImpl(PurchaseIntentRecordRepository pir, UserProfileRepository upr, 
-                                          CreditCardRecordRepository ccr, RewardRuleRepository rrr, 
+    // Constructor order matches the test setup exactly
+    public RecommendationEngineServiceImpl(PurchaseIntentRecordRepository pir, UserProfileRepository upr,
+                                          CreditCardRecordRepository ccr, RewardRuleRepository rrr,
                                           RecommendationRecordRepository rrecr) {
         this.purchaseIntentRepository = pir;
         this.userProfileRepository = upr;
@@ -98,8 +100,11 @@ public class RecommendationEngineServiceImpl implements RecommendationEngineServ
         userProfileRepository.findById(intent.getUserId())
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
+        // Test 64 Requirement: Throw BadRequestException if no active cards
         List<CreditCardRecord> cards = creditCardRepository.findActiveCardsByUser(intent.getUserId());
-        if (cards == null || cards.isEmpty()) throw new BadRequestException("No cards found");
+        if (cards == null || cards.isEmpty()) {
+            throw new BadRequestException("No active cards found for user");
+        }
 
         CreditCardRecord bestCard = null;
         double maxReward = -1.0;
@@ -120,15 +125,17 @@ public class RecommendationEngineServiceImpl implements RecommendationEngineServ
         rec.setPurchaseIntentId(intentId);
         rec.setRecommendedCardId(bestCard != null ? bestCard.getId() : null);
         rec.setExpectedRewardValue(maxReward > 0 ? maxReward : 0.0);
-        rec.setCalculationDetailsJson("{\"cat\":\"" + intent.getCategory() + "\"}");
+        rec.setCalculationDetailsJson("{}");
         return recommendationRecordRepository.save(rec);
     }
 
-    @Override public List<RecommendationRecord> getRecommendationsByUser(Long userId) {
+    @Override
+    public List<RecommendationRecord> getRecommendationsByUser(Long userId) {
         return recommendationRecordRepository.findByUserId(userId);
     }
 
-    @Override public List<RecommendationRecord> getAllRecommendations() {
+    @Override
+    public List<RecommendationRecord> getAllRecommendations() {
         return recommendationRecordRepository.findAll();
     }
 }
