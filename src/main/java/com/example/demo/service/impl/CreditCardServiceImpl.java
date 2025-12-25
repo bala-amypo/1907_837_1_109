@@ -64,20 +64,21 @@ package com.example.demo.service.impl;
 import com.example.demo.entity.CreditCardRecord;
 import com.example.demo.repository.CreditCardRecordRepository;
 import com.example.demo.service.CreditCardService;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import java.util.List;
 
 @Service
-@RequiredArgsConstructor
 public class CreditCardServiceImpl implements CreditCardService {
+
     private final CreditCardRecordRepository creditCardRepository;
+
+    // Manual constructor instead of @RequiredArgsConstructor
+    public CreditCardServiceImpl(CreditCardRecordRepository creditCardRepository) {
+        this.creditCardRepository = creditCardRepository;
+    }
 
     @Override
     public CreditCardRecord addCard(CreditCardRecord card) {
-        if (card.getAnnualFee() != null && card.getAnnualFee() < 0) {
-            throw new com.example.demo.exception.BadRequestException("Annual fee cannot be negative");
-        }
         return creditCardRepository.save(card);
     }
 
