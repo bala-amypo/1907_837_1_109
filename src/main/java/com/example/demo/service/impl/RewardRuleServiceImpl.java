@@ -72,10 +72,10 @@ import java.util.List;
 
 @Service
 public class RewardRuleServiceImpl implements RewardRuleService {
-    private final RewardRuleRepository rewardRuleRepository;
+    private final RewardRuleRepository repository;
 
-    public RewardRuleServiceImpl(RewardRuleRepository rewardRuleRepository) {
-        this.rewardRuleRepository = rewardRuleRepository;
+    public RewardRuleServiceImpl(RewardRuleRepository repository) {
+        this.repository = repository;
     }
 
     @Override
@@ -83,16 +83,9 @@ public class RewardRuleServiceImpl implements RewardRuleService {
         if (rule.getMultiplier() != null && rule.getMultiplier() <= 0) {
             throw new BadRequestException("Price multiplier must be > 0");
         }
-        return rewardRuleRepository.save(rule);
+        return repository.save(rule);
     }
 
-    @Override
-    public List<RewardRule> getActiveRules() {
-        return rewardRuleRepository.findByActiveTrue();
-    }
-
-    @Override
-    public List<RewardRule> getAllRules() {
-        return rewardRuleRepository.findAll();
-    }
+    @Override public List<RewardRule> getActiveRules() { return repository.findByActiveTrue(); }
+    @Override public List<RewardRule> getAllRules() { return repository.findAll(); }
 }
