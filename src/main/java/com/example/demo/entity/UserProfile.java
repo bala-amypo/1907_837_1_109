@@ -90,6 +90,7 @@
 
 
 package com.example.demo.entity;
+
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
@@ -107,15 +108,17 @@ public class UserProfile {
 
     @PrePersist
     public void prePersist() {
-        this.createdAt = LocalDateTime.now(); // Pass test t25
-        if (this.role == null) this.role = "USER"; // Pass test t31
+        this.createdAt = LocalDateTime.now();
+        if (this.role == null) this.role = "USER";
     }
 
-    // MANUAL GETTERS AND SETTERS FOR ALL FIELDS...
+    // Manual Getters and Setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
     public String getUserId() { return userId; }
     public void setUserId(String userId) { this.userId = userId; }
+    public String getFullName() { return fullName; }
+    public void setFullName(String fullName) { this.fullName = fullName; }
     public String getEmail() { return email; }
     public void setEmail(String email) { this.email = email; }
     public String getPassword() { return password; }
@@ -125,6 +128,4 @@ public class UserProfile {
     public Boolean getActive() { return active; }
     public void setActive(Boolean active) { this.active = active; }
     public LocalDateTime getCreatedAt() { return createdAt; }
-    public String getFullName() { return fullName; }
-    public void setFullName(String fullName) { this.fullName = fullName; }
 }

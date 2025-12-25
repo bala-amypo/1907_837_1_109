@@ -67,33 +67,26 @@ import com.example.demo.entity.RewardRule;
 import com.example.demo.exception.BadRequestException;
 import com.example.demo.repository.RewardRuleRepository;
 import com.example.demo.service.RewardRuleService;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import java.util.List;
 
 @Service
-@RequiredArgsConstructor
 public class RewardRuleServiceImpl implements RewardRuleService {
-    private final RewardRuleRepository rewardRuleRepository;
+    private final RewardRuleRepository repository;
+
+    public RewardRuleServiceImpl(RewardRuleRepository repository) {
+        this.repository = repository;
+    }
 
     @Override
     public RewardRule createRule(RewardRule rule) {
-        // Business Rule: multiplier must be positive
-        if (rule.getMultiplier() == null || rule.getMultiplier() <= 0) {
+        // Business Rule validation for multiplier
+        if (rule.getMultiplier() != null && rule.getMultiplier() <= 0) {
             throw new BadRequestException("Price multiplier must be > 0");
         }
-        return rewardRuleRepository.save(rule);
+        return repository.save(rule);
     }
 
-    @Override
-    public List<RewardRule> getActiveRules() {
-        return rewardRuleRepository.findByActiveTrue();
-    }
-
-    @Override
-    public List<RewardRule> getAllRules() {
-        return rewardRuleRepository.findAll();
-    }
-    
-    // Additional methods (updateRule, getRulesByCard) should be implemented here
+    @Override public List<RewardRule> getActiveRules() { return repository.findByActiveTrue(); }
+    @Override public List<RewardRule> getAllRules() { return repository.findAll(); }
 }
