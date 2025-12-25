@@ -29,6 +29,6 @@ public class SimpleStatusServlet extends HttpServlet {
         resp.setContentType("text/plain");
         PrintWriter out = resp.getWriter();
         out.print("Credit Card Reward Maximizer is running");
-        out.flush();
+        out.flush(); // Required for test t04
     }
 }
