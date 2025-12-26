@@ -137,63 +137,63 @@ import com.example.demo.dto.JwtResponse;
 import com.example.demo.dto.LoginRequest;
 import com.example.demo.dto.RegisterRequest;
 import com.example.demo.entity.UserProfile;
-import com.example.demo.repository.UserProfileRepository;
 import com.example.demo.security.JwtUtil;
 import com.example.demo.service.UserProfileService;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/auth")
 public class AuthController {
 
+    private final AuthenticationManager authenticationManager;
     private final UserProfileService userProfileService;
-    private final UserProfileRepository userProfileRepository;
     private final JwtUtil jwtUtil;
 
-    public AuthController(
-            UserProfileService userProfileService,
-            UserProfileRepository userProfileRepository,
-            JwtUtil jwtUtil
-    ) {
+    public AuthController(AuthenticationManager authenticationManager,
+                          UserProfileService userProfileService,
+                          JwtUtil jwtUtil) {
+        this.authenticationManager = authenticationManager;
         this.userProfileService = userProfileService;
-        this.userProfileRepository = userProfileRepository;
         this.jwtUtil = jwtUtil;
     }
 
-    // ----------------------
-    // REGISTER
-    // ----------------------
+    /* ======================= REGISTER ======================= */
     @PostMapping("/register")
-    public ResponseEntity<String> register(@RequestBody RegisterRequest request) {
+    public ResponseEntity<JwtResponse> register(@RequestBody RegisterRequest request) {
 
-        // Check existing email
-        if (userProfileRepository.existsByEmail(request.getEmail())) {
-            return ResponseEntity.badRequest().body("Email already registered");
-        }
+        // Map RegisterRequest → UserProfile
+        UserProfile profile = new UserProfile();
+        profile.setFullName(request.getFullName());
+        profile.setEmail(request.getEmail());
+        profile.setPassword(request.getPassword());
+        profile.setRole(request.getRole());
+        profile.setUserId(request.getUserId());
 
-        UserProfile user = userProfileService.createProfile(request);
+        // Save user
+        UserProfile savedUser = userProfileService.createUser(profile);
 
-        return ResponseEntity.ok("User Registered Successfully");
+        // Generate JWT
+        String token = jwtUtil.generateToken(
+                savedUser.getId(),
+                savedUser.getEmail(),
+                savedUser.getRole()
+        );
+
+        // Build response
+        JwtResponse response = new JwtResponse(
+                token,
+                savedUser.getId(),
+                savedUser.getEmail(),
+                savedUser.getRole()
+        );
+
+        return ResponseEntity.ok(response);
     }
 
-    // ----------------------
-    // LOGIN
-    // ----------------------
+    /* ======================== LOGIN ======================== */
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginRequest request) {
-
-        UserProfile user = userProfileRepository.findByEmail(request.getEmail())
-                .orElse(null);
-
-        if (user == null || !user.getPassword().equals(request.getPassword())) {
-            return ResponseEntity.status(401).body("Invalid credentials");
-        }
-
-        // Create JWT token
-        String token = jwtUtil.generateToken(user.getEmail());
-
-        return ResponseEntity.ok(new JwtResponse(token));
-    }
-}
+    public ResponseEntity<Jwt
