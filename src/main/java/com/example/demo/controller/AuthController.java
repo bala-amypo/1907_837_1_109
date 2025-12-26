@@ -69,15 +69,12 @@ import com.example.demo.dto.JwtResponse;
 import com.example.demo.dto.LoginRequest;
 import com.example.demo.dto.RegisterRequest;
 import com.example.demo.entity.UserProfile;
-import com.example.demo.exception.BadRequestException;
 import com.example.demo.repository.UserProfileRepository;
 import com.example.demo.security.JwtUtil;
 import com.example.demo.service.UserProfileService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -89,13 +86,7 @@ public class AuthController {
     private final AuthenticationManager authenticationManager;
     private final JwtUtil jwtUtil;
 
-    /**
-     * TECHNICAL CONSTRAINT: Exact Constructor Order Required for Testing
-     * 1. UserProfileService
-     * 2. UserProfileRepository
-     * 3. AuthenticationManager
-     * 4. JwtUtil
-     */
+    // CONSTRUCTOR ORDER MUST MATCH TEST SUITE SETUP
     public AuthController(UserProfileService userService,
                           UserProfileRepository userProfileRepository,
                           AuthenticationManager authenticationManager,
@@ -113,54 +104,26 @@ public class AuthController {
         user.setEmail(req.getEmail());
         user.setPassword(req.getPassword());
         user.setRole(req.getRole() != null ? req.getRole() : "USER");
-        
-        // Use external userId if provided, otherwise generate one
-        user.setUserId(req.getUserId() != null ? req.getUserId() : java.util.UUID.randomUUID().toString());
+        user.setUserId(req.getUserId());
         user.setActive(true);
 
-        // Service handles duplicate check and password encoding
         UserProfile savedUser = userService.createUser(user);
-
-        // Generate Token
+        
+        // Generate token using the required fields (ID, Email, Role)
         String token = jwtUtil.generateToken(savedUser.getId(), savedUser.getEmail(), savedUser.getRole());
 
-        return ResponseEntity.ok(new JwtResponse(
-                token, 
-                savedUser.getId(), 
-                savedUser.getEmail(), 
-                savedUser.getRole()
-        ));
+        return ResponseEntity.ok(new JwtResponse(token, savedUser.getId(), savedUser.getEmail(), savedUser.getRole()));
     }
 
     @PostMapping("/login")
     public ResponseEntity<JwtResponse> login(@RequestBody LoginRequest req) {
-        try {
-            // 1. Authenticate via Spring Security
-            Authentication authentication = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(req.getEmail(), req.getPassword())
-            );
+        authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(req.getEmail(), req.getPassword()));
+        
+        UserProfile user = userProfileRepository.findByEmail(req.getEmail())
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
-            // 2. Fetch User from DB
-            UserProfile user = userProfileRepository.findByEmail(req.getEmail())
-                    .orElseThrow(() -> new BadRequestException("User not found"));
+        String token = jwtUtil.generateToken(user.getId(), user.getEmail(), user.getRole());
 
-            // 3. TECHNICAL CONSTRAINT: Only active users are allowed to log in
-            if (user.getActive() == null || !user.getActive()) {
-                throw new BadRequestException("User account is inactive");
-            }
-
-            // 4. Generate JWT
-            String token = jwtUtil.generateToken(user.getId(), user.getEmail(), user.getRole());
-
-            return ResponseEntity.ok(new JwtResponse(
-                    token, 
-                    user.getId(), 
-                    user.getEmail(), 
-                    user.getRole()
-            ));
-
-        } catch (BadCredentialsException e) {
-            throw new BadRequestException("Invalid email or password");
-        }
+        return ResponseEntity.ok(new JwtResponse(token, user.getId(), user.getEmail(), user.getRole()));
     }
 }
