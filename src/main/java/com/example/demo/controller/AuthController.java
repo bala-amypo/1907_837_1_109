@@ -63,21 +63,6 @@
 //     }
 // }
 
-package com.example.demo.controller;
-
-import com.example.demo.dto.JwtResponse;
-import com.example.demo.dto.LoginRequest;
-import com.example.demo.dto.RegisterRequest;
-import com.example.demo.entity.UserProfile;
-import com.example.demo.repository.UserProfileRepository;
-import com.example.demo.security.JwtUtil;
-import com.example.demo.service.UserProfileService;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.bind.annotation.*;
-
 @RestController
 @RequestMapping("/auth")
 public class AuthController {
@@ -88,11 +73,8 @@ public class AuthController {
     private final JwtUtil jwtUtil;
     private final PasswordEncoder passwordEncoder;
 
-    public AuthController(UserProfileService userService,
-                          UserProfileRepository userProfileRepository,
-                          AuthenticationManager authenticationManager,
-                          JwtUtil jwtUtil,
-                          PasswordEncoder passwordEncoder) {
+    public AuthController(UserProfileService userService, UserProfileRepository userProfileRepository, 
+                          AuthenticationManager authenticationManager, JwtUtil jwtUtil, PasswordEncoder passwordEncoder) {
         this.userService = userService;
         this.userProfileRepository = userProfileRepository;
         this.authenticationManager = authenticationManager;
@@ -105,29 +87,25 @@ public class AuthController {
         UserProfile user = new UserProfile();
         user.setFullName(req.getFullName());
         user.setEmail(req.getEmail());
-        
-        // HASH THE PASSWORD
-        user.setPassword(passwordEncoder.encode(req.getPassword()));
-        
+        user.setPassword(passwordEncoder.encode(req.getPassword())); // FIX: ENCODE PASSWORD
         user.setRole(req.getRole() != null ? req.getRole() : "USER");
         user.setUserId(req.getUserId());
         user.setActive(true);
 
         UserProfile savedUser = userService.createUser(user);
         String token = jwtUtil.generateToken(savedUser.getId(), savedUser.getEmail(), savedUser.getRole());
-
         return ResponseEntity.ok(new JwtResponse(token, savedUser.getId(), savedUser.getEmail(), savedUser.getRole()));
     }
 
     @PostMapping("/login")
     public ResponseEntity<JwtResponse> login(@RequestBody LoginRequest req) {
+        // This will now work because password was encoded during registration
         authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(req.getEmail(), req.getPassword()));
         
         UserProfile user = userProfileRepository.findByEmail(req.getEmail())
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         String token = jwtUtil.generateToken(user.getId(), user.getEmail(), user.getRole());
-
         return ResponseEntity.ok(new JwtResponse(token, user.getId(), user.getEmail(), user.getRole()));
     }
 }

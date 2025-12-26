@@ -102,7 +102,6 @@ import com.example.demo.entity.UserProfile;
 import com.example.demo.service.UserProfileService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
 
 @RestController
@@ -115,18 +114,19 @@ public class UserProfileController {
         this.userService = userService;
     }
 
-    @PostMapping
-    public ResponseEntity<UserProfile> createUser(@RequestBody UserProfile user) {
-        return ResponseEntity.ok(userService.createUser(user));
-    }
-
-    @GetMapping("/{id}")
-    public ResponseEntity<UserProfile> getUser(@PathVariable Long id) {
-        return ResponseEntity.ok(userService.getUserById(id));
-    }
-
     @GetMapping
     public ResponseEntity<List<UserProfile>> getAllUsers() {
         return ResponseEntity.ok(userService.getAllUsers());
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<UserProfile> getUserById(@PathVariable Long id) {
+        UserProfile user = userService.getUserById(id);
+        return user != null ? ResponseEntity.ok(user) : ResponseEntity.notFound().build();
+    }
+
+    @PostMapping
+    public ResponseEntity<UserProfile> createUser(@RequestBody UserProfile user) {
+        return ResponseEntity.ok(userService.createUser(user));
     }
 }
