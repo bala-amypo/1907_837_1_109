@@ -63,70 +63,71 @@
 //     }
 // }
 
-package com.example.demo.controller;
+// package com.example.demo.controller;
 
-import com.example.demo.dto.LoginRequest;
-import com.example.demo.dto.JwtResponse;
-import com.example.demo.dto.RegisterRequest;
-import com.example.demo.entity.UserProfile;
-import com.example.demo.repository.UserProfileRepository;
-import com.example.demo.security.JwtUtil;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.bind.annotation.*;
+// import com.example.demo.dto.LoginRequest;
+// import com.example.demo.dto.JwtResponse;
+// import com.example.demo.dto.RegisterRequest;
+// import com.example.demo.entity.UserProfile;
+// import com.example.demo.repository.UserProfileRepository;
+// import com.example.demo.security.JwtUtil;
+// import org.springframework.http.ResponseEntity;
+// import org.springframework.security.authentication.AuthenticationManager;
+// import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+// import org.springframework.security.crypto.password.PasswordEncoder;
+// import org.springframework.web.bind.annotation.*;
 
-@RestController
-@RequestMapping("/auth")
-public class AuthController {
+// @RestController
+// @RequestMapping("/auth")
+// public class AuthController {
 
-    private final UserProfileRepository repo;
-    private final PasswordEncoder passwordEncoder;
-    private final AuthenticationManager authManager;
-    private final JwtUtil jwtUtil;
+//     private final UserProfileRepository repo;
+//     private final PasswordEncoder passwordEncoder;
+//     private final AuthenticationManager authManager;
+//     private final JwtUtil jwtUtil;
 
-    public AuthController(UserProfileRepository repo,
-                          PasswordEncoder passwordEncoder,
-                          AuthenticationManager authManager,
-                          JwtUtil jwtUtil) {
+//     public AuthController(UserProfileRepository repo,
+//                           PasswordEncoder passwordEncoder,
+//                           AuthenticationManager authManager,
+//                           JwtUtil jwtUtil) {
 
-        this.repo = repo;
-        this.passwordEncoder = passwordEncoder;
-        this.authManager = authManager;
-        this.jwtUtil = jwtUtil;
-    }
+//         this.repo = repo;
+//         this.passwordEncoder = passwordEncoder;
+//         this.authManager = authManager;
+//         this.jwtUtil = jwtUtil;
+//     }
 
-    @PostMapping("/register")
-    public ResponseEntity<JwtResponse> register(@RequestBody RegisterRequest req) {
+//     @PostMapping("/register")
+//     public ResponseEntity<JwtResponse> register(@RequestBody RegisterRequest req) {
 
-        UserProfile user = new UserProfile();
-        user.setFullName(req.getFullName());
-        user.setEmail(req.getEmail());
-        user.setPassword(passwordEncoder.encode(req.getPassword()));
-        user.setRole(req.getRole());
-        user.setUserId(req.getUserId());
-        repo.save(user);
+//         UserProfile user = new UserProfile();
+//         user.setFullName(req.getFullName());
+//         user.setEmail(req.getEmail());
+//         user.setPassword(passwordEncoder.encode(req.getPassword()));
+//         user.setRole(req.getRole());
+//         user.setUserId(req.getUserId());
+//         repo.save(user);
 
-        String token = jwtUtil.generateToken(user.getId(), user.getEmail(), user.getRole());
+//         String token = jwtUtil.generateToken(user.getId(), user.getEmail(), user.getRole());
 
-        return ResponseEntity.ok(new JwtResponse(token, user.getId(), user.getEmail(), user.getRole()));
-    }
+//         return ResponseEntity.ok(new JwtResponse(token, user.getId(), user.getEmail(), user.getRole()));
+//     }
 
-    @PostMapping("/login")
-    public ResponseEntity<JwtResponse> login(@RequestBody LoginRequest req) {
+//     @PostMapping("/login")
+//     public ResponseEntity<JwtResponse> login(@RequestBody LoginRequest req) {
 
-        authManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        req.getEmail(), req.getPassword()
-                )
-        );
+//         authManager.authenticate(
+//                 new UsernamePasswordAuthenticationToken(
+//                         req.getEmail(), req.getPassword()
+//                 )
+//         );
 
-        UserProfile user = repo.findByEmail(req.getEmail())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+//         UserProfile user = repo.findByEmail(req.getEmail())
+//                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        String token = jwtUtil.generateToken(user.getId(), user.getEmail(), user.getRole());
+//         String token = jwtUtil.generateToken(user.getId(), user.getEmail(), user.getRole());
 
-        return ResponseEntity.ok(new JwtResponse(token, user.getId(), user.getEmail(), user.getRole()));
-    }
-}
+//         return ResponseEntity.ok(new JwtResponse(token, user.getId(), user.getEmail(), user.getRole()));
+//     }
+// }
+
