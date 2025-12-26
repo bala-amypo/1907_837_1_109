@@ -78,45 +78,60 @@ public class JwtUtil {
     private final Key key;
     private final long expiration;
 
+    /**
+     * Constructor used by SecurityConfig to inject the secret and expiration.
+     */
     public JwtUtil(byte[] secret, long expiration) {
+        // Generates a HMAC-SHA key from the secret string
         this.key = Keys.hmacShaKeyFor(secret);
         this.expiration = expiration;
     }
 
+    /**
+     * Extracts the user email (subject) from the token.
+     */
     public String extractEmail(String token) {
         return extractClaim(token, Claims::getSubject);
     }
 
+    /**
+     * Extracts the custom "role" claim from the token.
+     */
     public String extractRole(String token) {
         return extractClaim(token, claims -> claims.get("role", String.class));
     }
 
-    public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
-        final Claims claims = extractAllClaims(token);
-        return claimsResolver.apply(claims);
+    /**
+     * Extracts the custom "userId" (Long) claim from the token.
+     */
+    public Long extractUserId(String token) {
+        return extractClaim(token, claims -> claims.get("userId", Long.class));
     }
 
-    private Claims extractAllClaims(String token) {
-        return Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody();
-    }
-
+    /**
+     * Validates the token signature and checks if it has expired.
+     */
     public boolean validateToken(String token) {
         try {
-            Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
+            Jwts.parserBuilder()
+                .setSigningKey(key)
+                .build()
+                .parseClaimsJws(token);
             return !isTokenExpired(token);
         } catch (Exception e) {
+            // Token is malformed, signature failed, or expired
             return false;
         }
     }
 
-    private boolean isTokenExpired(String token) {
-        return extractClaim(token, Claims::getExpiration).before(new Date());
-    }
-
+    /**
+     * Generates a new JWT token including UserId and Role.
+     */
     public String generateToken(Long id, String email, String role) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("userId", id);
         claims.put("role", role);
+        
         return Jwts.builder()
                 .setClaims(claims)
                 .setSubject(email)
@@ -124,5 +139,24 @@ public class JwtUtil {
                 .setExpiration(new Date(System.currentTimeMillis() + expiration))
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
+    }
+
+    // --- Private Helper Methods ---
+
+    private <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
+        final Claims claims = extractAllClaims(token);
+        return claimsResolver.apply(claims);
+    }
+
+    private Claims extractAllClaims(String token) {
+        return Jwts.parserBuilder()
+                .setSigningKey(key)
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+    }
+
+    private boolean isTokenExpired(String token) {
+        return extractClaim(token, Claims::getExpiration).before(new Date());
     }
 }
