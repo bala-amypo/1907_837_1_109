@@ -139,7 +139,6 @@ import com.example.demo.dto.RegisterRequest;
 import com.example.demo.entity.UserProfile;
 import com.example.demo.security.JwtUtil;
 import com.example.demo.service.UserProfileService;
-
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -161,39 +160,73 @@ public class AuthController {
         this.jwtUtil = jwtUtil;
     }
 
-    /* ======================= REGISTER ======================= */
+    /* =======================================================
+     *                     REGISTER
+     * ======================================================= */
     @PostMapping("/register")
     public ResponseEntity<JwtResponse> register(@RequestBody RegisterRequest request) {
 
-        // Map RegisterRequest → UserProfile
-        UserProfile profile = new UserProfile();
-        profile.setFullName(request.getFullName());
-        profile.setEmail(request.getEmail());
-        profile.setPassword(request.getPassword());
-        profile.setRole(request.getRole());
-        profile.setUserId(request.getUserId());
+        // Convert DTO -> Entity
+        UserProfile user = new UserProfile();
+        user.setFullName(request.getFullName());
+        user.setEmail(request.getEmail());
+        user.setPassword(request.getPassword());
+        user.setRole(request.getRole());
+        user.setUserId(request.getUserId());
 
         // Save user
-        UserProfile savedUser = userProfileService.createUser(profile);
+        UserProfile saved = userProfileService.createUser(user);
 
-        // Generate JWT
+        // Generate token
         String token = jwtUtil.generateToken(
-                savedUser.getId(),
-                savedUser.getEmail(),
-                savedUser.getRole()
+                saved.getId(),
+                saved.getEmail(),
+                saved.getRole()
         );
 
-        // Build response
+        // Return JWT Response
         JwtResponse response = new JwtResponse(
                 token,
-                savedUser.getId(),
-                savedUser.getEmail(),
-                savedUser.getRole()
+                saved.getId(),
+                saved.getEmail(),
+                saved.getRole()
         );
 
         return ResponseEntity.ok(response);
     }
 
-    /* ======================== LOGIN ======================== */
+    /* =======================================================
+     *                     LOGIN
+     * ======================================================= */
     @PostMapping("/login")
-    public ResponseEntity<Jwt
+    public ResponseEntity<JwtResponse> login(@RequestBody LoginRequest request) {
+
+        // Authenticate username/password
+        authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                        request.getEmail(),
+                        request.getPassword()
+                )
+        );
+
+        // Fetch user
+        UserProfile user = userProfileService.findByEmail(request.getEmail());
+
+        // Generate token
+        String token = jwtUtil.generateToken(
+                user.getId(),
+                user.getEmail(),
+                user.getRole()
+        );
+
+        // Build response
+        JwtResponse response = new JwtResponse(
+                token,
+                user.getId(),
+                user.getEmail(),
+                user.getRole()
+        );
+
+        return ResponseEntity.ok(response);
+    }
+}
