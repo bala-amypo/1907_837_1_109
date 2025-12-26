@@ -73,7 +73,7 @@ public class JwtUtil {
     private final Key key;
     private final long expirationMs;
 
-    // TECHNICAL CONSTRAINT: Constructor required by automated test suite
+    // EXACT CONSTRUCTOR REQUIRED BY TESTS
     public JwtUtil(byte[] secret, Long expirationMs) {
         this.key = Keys.hmacShaKeyFor(secret);
         this.expirationMs = expirationMs;
@@ -102,5 +102,15 @@ public class JwtUtil {
     public String extractEmail(String token) {
         return Jwts.parserBuilder().setSigningKey(key).build()
                 .parseClaimsJws(token).getBody().getSubject();
+    }
+
+    public String extractRole(String token) {
+        return Jwts.parserBuilder().setSigningKey(key).build()
+                .parseClaimsJws(token).getBody().get("role", String.class);
+    }
+
+    public Long extractUserId(String token) {
+        return Jwts.parserBuilder().setSigningKey(key).build()
+                .parseClaimsJws(token).getBody().get("userId", Long.class);
     }
 }
