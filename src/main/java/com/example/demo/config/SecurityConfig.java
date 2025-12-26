@@ -59,7 +59,7 @@ public class SecurityConfig {
     @Value("${app.jwt.expiration-ms}")
     private Long jwtExpiration;
 
-    // FIX: Define the JwtUtil Bean manually here
+    // Create JwtUtil Bean (Spring needs this!)
     @Bean
     public JwtUtil jwtUtil() {
         return new JwtUtil(jwtSecret.getBytes(StandardCharsets.UTF_8), jwtExpiration);
@@ -77,15 +77,23 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http, JwtAuthenticationFilter jwtFilter) throws Exception {
+
         http
             .csrf(csrf -> csrf.disable())
             .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/auth/**", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
+                // Allow register + login
+                .requestMatchers("/auth/**").permitAll()
+
+                // Allow Swagger (optional)
+                .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
+
+                // Everything else requires login
                 .anyRequest().authenticated()
             )
+            // Add JWT filter
             .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
-        
+
         return http.build();
     }
 }
