@@ -122,7 +122,6 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.util.Collections;
-import java.util.List;
 
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
@@ -144,22 +143,21 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             
             if (jwtUtil.validateToken(token)) {
                 String email = jwtUtil.extractEmail(token);
-                String role = jwtUtil.extractRole(token); // Get role from JWT claims
+                String role = jwtUtil.extractRole(token);
 
-                // Spring Security expects roles to start with "ROLE_"
-                List<SimpleGrantedAuthority> authorities = 
-                    Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + role));
+                // Ensure role is not null
+                if (role == null) role = "USER";
 
                 UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                        email, null, authorities);
+                        email, 
+                        null, 
+                        Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + role))
+                );
                 
                 authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                
-                // Set the security context so the user is now "Logged In" for this request
                 SecurityContextHolder.getContext().setAuthentication(authToken);
             }
         }
-        
         filterChain.doFilter(request, response);
     }
 }
