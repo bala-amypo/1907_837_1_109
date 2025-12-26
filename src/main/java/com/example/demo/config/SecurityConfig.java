@@ -34,34 +34,26 @@
 package com.example.demo.config;
 
 import com.example.demo.security.JwtAuthenticationFilter;
-import com.example.demo.security.JwtUtil;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
-import java.nio.charset.StandardCharsets;
-
 @Configuration
+@EnableWebSecurity
 public class SecurityConfig {
 
-    @Value("${app.jwt.secret}")
-    private String jwtSecret;
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
-    @Value("${app.jwt.expiration-ms}")
-    private Long jwtExpiration;
-
-    // TECHNICAL CONSTRAINT FIX: Manually define the JwtUtil bean
-    @Bean
-    public JwtUtil jwtUtil() {
-        return new JwtUtil(jwtSecret.getBytes(StandardCharsets.UTF_8), jwtExpiration);
+    public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter) {
+        this.jwtAuthenticationFilter = jwtAuthenticationFilter;
     }
 
     @Bean
@@ -75,16 +67,25 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http, JwtAuthenticationFilter jwtFilter) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
+            // 1. DISABLE CSRF (Required for POST requests in Stateless APIs)
             .csrf(csrf -> csrf.disable())
-            .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            
+            // 2. Set Session Policy to Stateless
+            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            
+            // 3. Configure Path Permissions
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/auth/**", "/simple-status", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
-                .anyRequest().authenticated()
+                .requestMatchers("/auth/**").permitAll()             // Allow Login/Register
+                .requestMatchers("/simple-status").permitAll()      // Allow Health Check
+                .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll() // Allow Swagger
+                .anyRequest().authenticated()                       // Protect everything else
             )
-            .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
-        
+            
+            // 4. Add the JWT Filter
+            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+
         return http.build();
     }
 }

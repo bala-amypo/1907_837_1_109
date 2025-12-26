@@ -140,7 +140,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             if (jwtUtil.validateToken(token)) {
                 String email = jwtUtil.extractEmail(token);
                 
-                // Set the authentication in the context
                 UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                         email, null, new ArrayList<>());
                 
@@ -148,6 +147,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 SecurityContextHolder.getContext().setAuthentication(authToken);
             }
         }
+        
+        // Always continue the filter chain
         filterChain.doFilter(request, response);
     }
 }
