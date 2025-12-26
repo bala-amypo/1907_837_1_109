@@ -172,10 +172,6 @@ public class UserProfileServiceImpl implements UserProfileService {
     private final UserProfileRepository userProfileRepository;
     private final PasswordEncoder passwordEncoder;
 
-    /**
-     * TECHNICAL CONSTRAINT: Constructor Injection is required.
-     * Dependencies must be in this exact order: UserProfileRepository, PasswordEncoder.
-     */
     public UserProfileServiceImpl(UserProfileRepository userProfileRepository, PasswordEncoder passwordEncoder) {
         this.userProfileRepository = userProfileRepository;
         this.passwordEncoder = passwordEncoder;
@@ -183,39 +179,28 @@ public class UserProfileServiceImpl implements UserProfileService {
 
     @Override
     public UserProfile createUser(UserProfile profile) {
-        // Validation: Ensure Email is unique
         if (userProfileRepository.existsByEmail(profile.getEmail())) {
             throw new BadRequestException("Email already exists");
         }
-        
-        // Validation: Ensure UserId is unique
         if (userProfileRepository.existsByUserId(profile.getUserId())) {
             throw new BadRequestException("User ID already exists");
         }
-
-        // Logic: Encode password before persisting
         if (profile.getPassword() != null) {
             profile.setPassword(passwordEncoder.encode(profile.getPassword()));
         }
-
-        // Default status if not provided
-        if (profile.getActive() == null) {
-            profile.setActive(true);
-        }
-
         return userProfileRepository.save(profile);
     }
 
     @Override
     public UserProfile getUserById(Long id) {
         return userProfileRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
     }
 
     @Override
     public UserProfile findByUserId(String userId) {
         return userProfileRepository.findByUserId(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with userId: " + userId));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
     }
 
     @Override
@@ -230,9 +215,7 @@ public class UserProfileServiceImpl implements UserProfileService {
         return userProfileRepository.save(user);
     }
 
-    /**
-     * Helper method used by Security workflow
-     */
+    @Override
     public Optional<UserProfile> findByEmail(String email) {
         return userProfileRepository.findByEmail(email);
     }
