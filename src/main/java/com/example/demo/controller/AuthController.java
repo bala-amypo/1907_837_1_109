@@ -106,7 +106,7 @@ public class AuthController {
         user.setFullName(req.getFullName());
         user.setEmail(req.getEmail());
         
-        // IMPORTANT: Hash the password before saving
+        // HASH THE PASSWORD
         user.setPassword(passwordEncoder.encode(req.getPassword()));
         
         user.setRole(req.getRole() != null ? req.getRole() : "USER");
@@ -114,7 +114,6 @@ public class AuthController {
         user.setActive(true);
 
         UserProfile savedUser = userService.createUser(user);
-        
         String token = jwtUtil.generateToken(savedUser.getId(), savedUser.getEmail(), savedUser.getRole());
 
         return ResponseEntity.ok(new JwtResponse(token, savedUser.getId(), savedUser.getEmail(), savedUser.getRole()));
@@ -122,10 +121,7 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<JwtResponse> login(@RequestBody LoginRequest req) {
-        // This triggers the internal DaoAuthenticationProvider to check the password
-        authenticationManager.authenticate(
-            new UsernamePasswordAuthenticationToken(req.getEmail(), req.getPassword())
-        );
+        authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(req.getEmail(), req.getPassword()));
         
         UserProfile user = userProfileRepository.findByEmail(req.getEmail())
                 .orElseThrow(() -> new RuntimeException("User not found"));
