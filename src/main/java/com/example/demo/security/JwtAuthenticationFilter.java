@@ -119,7 +119,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
-
 import java.io.IOException;
 import java.util.Collections;
 
@@ -128,6 +127,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
 
+    // Spring will now find the JwtUtil bean defined in SecurityConfig
     public JwtAuthenticationFilter(JwtUtil jwtUtil) {
         this.jwtUtil = jwtUtil;
     }
@@ -140,19 +140,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             String token = authHeader.substring(7);
-            
             if (jwtUtil.validateToken(token)) {
                 String email = jwtUtil.extractEmail(token);
                 String role = jwtUtil.extractRole(token);
-
-                // Ensure role is not null
-                if (role == null) role = "USER";
-
+                
                 UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                        email, 
-                        null, 
-                        Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + role))
-                );
+                        email, null, Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + role)));
                 
                 authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authToken);
