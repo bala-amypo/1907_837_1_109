@@ -47,17 +47,23 @@
 package com.example.demo.config;
 
 import com.example.demo.security.JwtAuthenticationFilter;
+import com.example.demo.security.JwtUtil;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
+import java.nio.charset.StandardCharsets;
 
 @Configuration
 @EnableWebSecurity
@@ -65,38 +71,58 @@ public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtFilter;
 
+    // Inject values from application.properties
+    @Value("${app.jwt.secret:test-jwt-secret-key-for-tests-12345678901234567890}")
+    private String jwtSecret;
+
+    @Value("${app.jwt.expiration-ms:3600000}")
+    private Long jwtExpiration;
+
     public SecurityConfig(JwtAuthenticationFilter jwtFilter) {
         this.jwtFilter = jwtFilter;
     }
 
+    // 1. Define Password Encoder
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
+    // 2. CRITICAL FIX: Define JwtUtil as a managed Bean
+    // This resolves the "JwtUtil bean not found" error during startup
+    @Bean
+    public JwtUtil jwtUtil() {
+        return new JwtUtil(jwtSecret.getBytes(StandardCharsets.UTF_8), jwtExpiration);
+    }
+
+    // 3. Expose AuthenticationManager
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();
     }
 
+    // 4. Security Filter Chain Configuration
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-            // 1. DISABLE CSRF (This is the main cause of 403 on POST requests)
-            .csrf(csrf -> csrf.disable())
+            // Disable CSRF to allow POST requests like /auth/register and /auth/login
+            .csrf(AbstractHttpConfigurer::disable)
             
-            // 2. Set Session Management to STATELESS (required for JWT)
+            // Enable Default CORS settings
+            .cors(Customizer.withDefaults())
+            
+            // Set session management to STATELESS (required for JWT)
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             
-            // 3. Configure Path Permissions
+            // Define Endpoint Permissions
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/auth/**").permitAll()             // Allow Login/Register
-                .requestMatchers("/simple-status").permitAll()      // Allow Health Check
-                .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**").permitAll() // Allow Swagger
-                .anyRequest().authenticated()                       // Protect everything else
+                // Public endpoints that do not require a JWT token
+                .requestMatchers("/auth/**", "/simple-status", "/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**").permitAll()
+                // All other /api/** requests must be authenticated
+                .anyRequest().authenticated()
             )
             
-            // 4. Add the JWT Filter
+            // Add the JWT Filter before the standard UsernamePasswordAuthenticationFilter
             .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
