@@ -172,7 +172,10 @@ public class UserProfileServiceImpl implements UserProfileService {
     private final UserProfileRepository userProfileRepository;
     private final PasswordEncoder passwordEncoder;
 
-    // Manual constructor for Dependency Injection (required for the Test Class setup)
+    /**
+     * TECHNICAL CONSTRAINT: Constructor Injection is required.
+     * Dependencies must be in this exact order: UserProfileRepository, PasswordEncoder.
+     */
     public UserProfileServiceImpl(UserProfileRepository userProfileRepository, PasswordEncoder passwordEncoder) {
         this.userProfileRepository = userProfileRepository;
         this.passwordEncoder = passwordEncoder;
@@ -180,18 +183,24 @@ public class UserProfileServiceImpl implements UserProfileService {
 
     @Override
     public UserProfile createUser(UserProfile profile) {
-        // Business Rule: Email and UserId must be unique
+        // Validation: Ensure Email is unique
         if (userProfileRepository.existsByEmail(profile.getEmail())) {
-            throw new BadRequestException("Email already exists: " + profile.getEmail());
+            throw new BadRequestException("Email already exists");
         }
+        
+        // Validation: Ensure UserId is unique
         if (userProfileRepository.existsByUserId(profile.getUserId())) {
-            throw new BadRequestException("User ID already exists: " + profile.getUserId());
+            throw new BadRequestException("User ID already exists");
         }
 
-        // Encrypt the password before saving
-        String rawPassword = profile.getPassword();
-        if (rawPassword != null) {
-            profile.setPassword(passwordEncoder.encode(rawPassword));
+        // Logic: Encode password before persisting
+        if (profile.getPassword() != null) {
+            profile.setPassword(passwordEncoder.encode(profile.getPassword()));
+        }
+
+        // Default status if not provided
+        if (profile.getActive() == null) {
+            profile.setActive(true);
         }
 
         return userProfileRepository.save(profile);
@@ -204,11 +213,26 @@ public class UserProfileServiceImpl implements UserProfileService {
     }
 
     @Override
+    public UserProfile findByUserId(String userId) {
+        return userProfileRepository.findByUserId(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with userId: " + userId));
+    }
+
+    @Override
     public List<UserProfile> getAllUsers() {
         return userProfileRepository.findAll();
     }
 
     @Override
+    public UserProfile updateUserStatus(Long id, boolean active) {
+        UserProfile user = getUserById(id);
+        user.setActive(active);
+        return userProfileRepository.save(user);
+    }
+
+    /**
+     * Helper method used by Security workflow
+     */
     public Optional<UserProfile> findByEmail(String email) {
         return userProfileRepository.findByEmail(email);
     }

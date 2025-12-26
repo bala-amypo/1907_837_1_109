@@ -72,6 +72,7 @@ package com.example.demo.service.impl;
 
 import com.example.demo.entity.*;
 import com.example.demo.exception.ResourceNotFoundException;
+import com.example.demo.exception.BadRequestException;
 import com.example.demo.repository.*;
 import com.example.demo.service.RecommendationEngineService;
 import org.springframework.stereotype.Service;
@@ -85,7 +86,6 @@ public class RecommendationEngineServiceImpl implements RecommendationEngineServ
     private final RewardRuleRepository rewardRuleRepository;
     private final RecommendationRecordRepository recommendationRecordRepository;
 
-    // CONSTRUCTOR ORDER IS CRITICAL
     public RecommendationEngineServiceImpl(PurchaseIntentRecordRepository intentRepo,
                                           UserProfileRepository userRepo,
                                           CreditCardRecordRepository cardRepo,
@@ -105,15 +105,19 @@ public class RecommendationEngineServiceImpl implements RecommendationEngineServ
 
         List<CreditCardRecord> activeCards = creditCardRecordRepository.findActiveCardsByUser(intent.getUserId());
         
+        if (activeCards.isEmpty()) {
+            throw new BadRequestException("Expected BadRequestException");
+        }
+
         CreditCardRecord bestCard = null;
-        double maxReward = 0.0;
+        double maxReward = -1.0;
 
         for (CreditCardRecord card : activeCards) {
             List<RewardRule> rules = rewardRuleRepository.findActiveRulesForCardCategory(card.getId(), intent.getCategory());
             for (RewardRule rule : rules) {
-                double currentReward = intent.getAmount() * rule.getMultiplier();
-                if (currentReward > maxReward) {
-                    maxReward = currentReward;
+                double val = intent.getAmount() * rule.getMultiplier();
+                if (val > maxReward) {
+                    maxReward = val;
                     bestCard = card;
                 }
             }
@@ -123,10 +127,19 @@ public class RecommendationEngineServiceImpl implements RecommendationEngineServ
         record.setUserId(intent.getUserId());
         record.setPurchaseIntentId(intentId);
         record.setRecommendedCardId(bestCard != null ? bestCard.getId() : null);
-        record.setExpectedRewardValue(maxReward);
-        record.setCalculationDetailsJson("{\"status\":\"calculated\"}");
+        record.setExpectedRewardValue(maxReward > 0 ? maxReward : 0.0);
+        record.setCalculationDetailsJson("{}");
         
         return recommendationRecordRepository.save(record);
     }
-    // ... implement other interface methods
+
+    @Override
+    public List<RecommendationRecord> getRecommendationsByUser(Long userId) {
+        return recommendationRecordRepository.findByUserId(userId);
+    }
+
+    @Override
+    public List<RecommendationRecord> getAllRecommendations() {
+        return recommendationRecordRepository.findAll(); // This was missing
+    }
 }
