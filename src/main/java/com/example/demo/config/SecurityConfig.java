@@ -33,7 +33,6 @@
 package com.example.demo.config;
 
 import com.example.demo.security.JwtAuthenticationFilter;
-import com.example.demo.security.JwtUtil;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -69,21 +68,21 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-            // 1. DISABLE CSRF - This is the primary reason for the 403 error
+            // 1. DISABLE CSRF - This is the primary fix for the 403 error
             .csrf(csrf -> csrf.disable())
             
-            // 2. Set Session Management to STATELESS (required for JWT)
+            // 2. Set Session Policy to STATELESS (No sessions/cookies)
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             
-            // 3. Configure Path Permissions
+            // 3. Configure Permissions
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/auth/**").permitAll()             // Allow Register/Login
-                .requestMatchers("/simple-status").permitAll()      // Allow Health Check Servlet
+                .requestMatchers("/auth/**").permitAll()             // Allow register and login
+                .requestMatchers("/simple-status").permitAll()      // Allow Health Check
                 .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**").permitAll() // Allow Swagger
-                .anyRequest().authenticated()                       // All other /api/ calls need a token
+                .anyRequest().authenticated()                       // Protect all other /api/** endpoints
             )
             
-            // 4. Add the JWT Filter before standard auth filter
+            // 4. Add the JWT Filter
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
