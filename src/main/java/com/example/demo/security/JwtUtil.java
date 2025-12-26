@@ -63,7 +63,6 @@
 
 package com.example.demo.security;
 
-import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
@@ -74,6 +73,7 @@ public class JwtUtil {
     private final Key key;
     private final long expirationMs;
 
+    // TECHNICAL CONSTRAINT: Constructor required by automated test suite
     public JwtUtil(byte[] secret, Long expirationMs) {
         this.key = Keys.hmacShaKeyFor(secret);
         this.expirationMs = expirationMs;
