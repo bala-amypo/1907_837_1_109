@@ -114,12 +114,15 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
+
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
@@ -138,19 +141,25 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             String token = authHeader.substring(7);
+            
             if (jwtUtil.validateToken(token)) {
                 String email = jwtUtil.extractEmail(token);
-                
-                // If token is valid, set the security context
+                String role = jwtUtil.extractRole(token); // Get role from JWT claims
+
+                // Spring Security expects roles to start with "ROLE_"
+                List<SimpleGrantedAuthority> authorities = 
+                    Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + role));
+
                 UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                        email, null, new ArrayList<>());
+                        email, null, authorities);
                 
                 authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                
+                // Set the security context so the user is now "Logged In" for this request
                 SecurityContextHolder.getContext().setAuthentication(authToken);
             }
         }
         
-        // CRITICAL: Always continue the filter chain
         filterChain.doFilter(request, response);
     }
 }

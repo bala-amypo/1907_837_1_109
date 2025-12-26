@@ -75,6 +75,7 @@ import com.example.demo.service.UserProfileService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -85,16 +86,18 @@ public class AuthController {
     private final UserProfileRepository userProfileRepository;
     private final AuthenticationManager authenticationManager;
     private final JwtUtil jwtUtil;
+    private final PasswordEncoder passwordEncoder;
 
-    // CONSTRUCTOR ORDER MUST MATCH TEST SUITE SETUP
     public AuthController(UserProfileService userService,
                           UserProfileRepository userProfileRepository,
                           AuthenticationManager authenticationManager,
-                          JwtUtil jwtUtil) {
+                          JwtUtil jwtUtil,
+                          PasswordEncoder passwordEncoder) {
         this.userService = userService;
         this.userProfileRepository = userProfileRepository;
         this.authenticationManager = authenticationManager;
         this.jwtUtil = jwtUtil;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @PostMapping("/register")
@@ -102,14 +105,16 @@ public class AuthController {
         UserProfile user = new UserProfile();
         user.setFullName(req.getFullName());
         user.setEmail(req.getEmail());
-        user.setPassword(req.getPassword());
+        
+        // IMPORTANT: Hash the password before saving
+        user.setPassword(passwordEncoder.encode(req.getPassword()));
+        
         user.setRole(req.getRole() != null ? req.getRole() : "USER");
         user.setUserId(req.getUserId());
         user.setActive(true);
 
         UserProfile savedUser = userService.createUser(user);
         
-        // Generate token using the required fields (ID, Email, Role)
         String token = jwtUtil.generateToken(savedUser.getId(), savedUser.getEmail(), savedUser.getRole());
 
         return ResponseEntity.ok(new JwtResponse(token, savedUser.getId(), savedUser.getEmail(), savedUser.getRole()));
@@ -117,7 +122,10 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<JwtResponse> login(@RequestBody LoginRequest req) {
-        authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(req.getEmail(), req.getPassword()));
+        // This triggers the internal DaoAuthenticationProvider to check the password
+        authenticationManager.authenticate(
+            new UsernamePasswordAuthenticationToken(req.getEmail(), req.getPassword())
+        );
         
         UserProfile user = userProfileRepository.findByEmail(req.getEmail())
                 .orElseThrow(() -> new RuntimeException("User not found"));
