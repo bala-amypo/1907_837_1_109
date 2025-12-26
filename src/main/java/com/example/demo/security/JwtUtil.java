@@ -67,7 +67,6 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
-
 import java.security.Key;
 import java.util.Date;
 import java.util.HashMap;
@@ -92,16 +91,13 @@ public class JwtUtil {
         return extractClaim(token, claims -> claims.get("role", String.class));
     }
 
-    public <T> T extractClaim(String token, Function<Claims, T> resolver) {
-        return resolver.apply(extractAllClaims(token));
+    public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
+        final Claims claims = extractAllClaims(token);
+        return claimsResolver.apply(claims);
     }
 
     private Claims extractAllClaims(String token) {
-        return Jwts.parserBuilder()
-                .setSigningKey(key)
-                .build()
-                .parseClaimsJws(token)
-                .getBody();
+        return Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody();
     }
 
     public boolean validateToken(String token) {
@@ -121,11 +117,10 @@ public class JwtUtil {
         Map<String, Object> claims = new HashMap<>();
         claims.put("userId", id);
         claims.put("role", role);
-
         return Jwts.builder()
                 .setClaims(claims)
                 .setSubject(email)
-                .setIssuedAt(new Date())
+                .setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis() + expiration))
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();

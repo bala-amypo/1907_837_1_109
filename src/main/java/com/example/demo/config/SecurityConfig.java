@@ -59,7 +59,7 @@ public class SecurityConfig {
     @Value("${app.jwt.expiration-ms}")
     private Long jwtExpiration;
 
-    // Create JwtUtil Bean
+    // This creates the JwtUtil bean so it can be injected into the Filter
     @Bean
     public JwtUtil jwtUtil() {
         return new JwtUtil(jwtSecret.getBytes(StandardCharsets.UTF_8), jwtExpiration);
@@ -77,17 +77,15 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http, JwtAuthenticationFilter jwtFilter) throws Exception {
-
         http
-            .csrf(cs -> cs.disable())
+            .csrf(csrf -> csrf.disable())
             .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/auth/**").permitAll() // allow auth endpoints
-                .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll() // allow swagger
-                .anyRequest().authenticated() // secure other endpoints
+                .requestMatchers("/auth/**", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
+                .anyRequest().authenticated()
             )
             .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
-
+        
         return http.build();
     }
 }
