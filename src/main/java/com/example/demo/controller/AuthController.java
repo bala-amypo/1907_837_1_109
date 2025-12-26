@@ -144,3 +144,5 @@ public class AuthController {
         return ResponseEntity.ok(new JwtResponse(token, user.getId(), user.getEmail(), user.getRole()));
     }
 }
+
+
