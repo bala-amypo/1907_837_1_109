@@ -51,37 +51,37 @@ import java.nio.charset.StandardCharsets;
 public class SecurityConfig {
 
     @Value("${app.jwt.secret}")
-    private String jwtSecret;
+        private String jwtSecret;
 
-    @Value("${app.jwt.expiration-ms}")
-    private Long jwtExpiration;
+            @Value("${app.jwt.expiration-ms}")
+                private Long jwtExpiration;
 
-    @Bean
-    public JwtUtil jwtUtil() {
-        return new JwtUtil(jwtSecret.getBytes(StandardCharsets.UTF_8), jwtExpiration);
-    }
+                    @Bean
+                        public JwtUtil jwtUtil() {
+                                return new JwtUtil(jwtSecret.getBytes(StandardCharsets.UTF_8), jwtExpiration);
+                                    }
 
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
+                                        @Bean
+                                            public PasswordEncoder passwordEncoder() {
+                                                    return new BCryptPasswordEncoder();
+                                                        }
 
-    @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
-        return config.getAuthenticationManager();
-    }
+                                                            @Bean
+                                                                public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
+                                                                        return config.getAuthenticationManager();
+                                                                            }
 
-    @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http, JwtAuthenticationFilter jwtFilter) throws Exception {
-        http
-            .csrf(csrf -> csrf.disable()) // FIX: Prevents 403 on POST requests
-            .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/auth/**", "/v3/api-docs/**", "/swagger-ui/**").permitAll()
-                .anyRequest().authenticated()
-            )
-            .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
-        
-        return http.build();
-    }
-}
+                                                                                @Bean
+                                                                                    public SecurityFilterChain filterChain(HttpSecurity http, JwtAuthenticationFilter jwtFilter) throws Exception {
+                                                                                            http
+                                                                                                        .csrf(csrf -> csrf.disable()) // FIX: Prevents 403 on POST requests
+                                                                                                                    .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                                                                                                                                .authorizeHttpRequests(auth -> auth
+                                                                                                                                                .requestMatchers("/auth/**", "/v3/api-docs/**", "/swagger-ui/**").permitAll()
+                                                                                                                                                                .anyRequest().authenticated()
+                                                                                                                                                                            )
+                                                                                                                                                                                        .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+                                                                                                                                                                                                
+                                                                                                                                                                                                        return http.build();
+                                                                                                                                                                                                            }
+                                                                                                                                                                                                            }
