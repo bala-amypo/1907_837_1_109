@@ -60,8 +60,8 @@ import java.util.List;
 @Configuration
 public class SwaggerConfig {
 
-    @Bean
-    public OpenAPI customOpenAPI() {
+@Bean
+public OpenAPI customOpenAPI() {
         final String securitySchemeName = "BearerAuth";
         
         return new OpenAPI()
