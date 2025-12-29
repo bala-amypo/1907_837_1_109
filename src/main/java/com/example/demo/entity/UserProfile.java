@@ -17,7 +17,7 @@ public class UserProfile {
     private String userId;
 
     private String fullName;
-
+    //@one to many
     @Column(unique = true)
     private String email;
 
