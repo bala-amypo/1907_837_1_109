@@ -62,25 +62,25 @@ public class SwaggerConfig {
 
 @Bean
 public OpenAPI customOpenAPI() {
-        final String securitySchemeName = "BearerAuth";
+final String securitySchemeName = "BearerAuth";
         
-        return new OpenAPI()
-                .info(new Info()
-                        .title("Credit Card Reward Maximizer API")
-                        .version("1.0")
-                        .description("API Documentation for managing user profiles, credit cards, reward rules, and generating purchase recommendations."))
-                .servers(List.of(
-                        new Server().url("https://9295.408procr.amypo.ai/").description("Production Server"),
-                        new Server().url("http://localhost:9001").description("Local Server")
-                ))
+return new OpenAPI()
+.info(new Info()
+.title("Credit Card Reward Maximizer API")
+.version("1.0")
+.description("API Documentation for managing user profiles, credit cards, reward rules, and generating purchase recommendations."))
+.servers(List.of(
+new Server().url("https://9295.408procr.amypo.ai/").description("Production Server"),
+new Server().url("http://localhost:9001").description("Local Server")
+         ))
                 // 1. Add the "Authorize" button globally to all endpoints
-                .addSecurityItem(new SecurityRequirement().addList(securitySchemeName))
+.addSecurityItem(new SecurityRequirement().addList(securitySchemeName))
                 // 2. Define the security scheme type (JWT Bearer Token)
-                .components(new Components()
-                        .addSecuritySchemes(securitySchemeName, new SecurityScheme()
-                                .name(securitySchemeName)
-                                .type(SecurityScheme.Type.HTTP)
-                                .scheme("bearer")
-                                .bearerFormat("JWT")));
+.components(new Components()
+.addSecuritySchemes(securitySchemeName, new SecurityScheme()
+.name(securitySchemeName)
+.type(SecurityScheme.Type.HTTP)
+.scheme("bearer")
+.bearerFormat("JWT")));
     }
 }
