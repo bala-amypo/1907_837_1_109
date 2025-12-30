@@ -78,9 +78,8 @@ public class JwtUtil {
     private final Key key;
     private final long expiration;
 
-    /**
-     * Constructor used by SecurityConfig to inject the secret and expiration.
-     */
+    
+
     public JwtUtil(byte[] secret, long expiration) {
         // Generates a HMAC-SHA key from the secret string
         this.key = Keys.hmacShaKeyFor(secret);
