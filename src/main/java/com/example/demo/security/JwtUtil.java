@@ -81,28 +81,21 @@ public class JwtUtil {
     
 
     public JwtUtil(byte[] secret, long expiration) {
-        // Generates a HMAC-SHA key from the secret string
+        
         this.key = Keys.hmacShaKeyFor(secret);
         this.expiration = expiration;
     }
 
-    /**
-     * Extracts the user email (subject) from the token.
      */
     public String extractEmail(String token) {
         return extractClaim(token, Claims::getSubject);
     }
 
-    /**
-     * Extracts the custom "role" claim from the token.
-     */
     public String extractRole(String token) {
         return extractClaim(token, claims -> claims.get("role", String.class));
     }
 
-    /**
-     * Extracts the custom "userId" (Long) claim from the token.
-     */
+    
     public Long extractUserId(String token) {
         return extractClaim(token, claims -> claims.get("userId", Long.class));
     }
